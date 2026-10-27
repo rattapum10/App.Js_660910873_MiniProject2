@@ -1,0 +1,815 @@
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ค้นหาเที่ยวรถ | SmartTransit</title>
+  <meta name="description" content="ค้นหาเที่ยวรถ เลือกวันที่เดินทาง และจองตั๋วกับ SmartTransit">
+
+  <style>
+    :root {
+      --primary: #123b52;
+      --accent: #12aa9f;
+      --accent-dark: #0d8f86;
+      --bg: #f3f7fa;
+      --text: #203449;
+      --muted: #718297;
+      --border: #e1e9f0;
+      --soft: #e5f7f4;
+      --shadow: 0 8px 28px rgba(18,59,82,.06);
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.6 Arial, Tahoma, sans-serif;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, input, select { font: inherit; }
+
+    button:focus-visible, a:focus-visible,
+    input:focus-visible, select:focus-visible {
+      outline: 3px solid #55d9ce;
+      outline-offset: 3px;
+    }
+
+    .container {
+      width: min(1120px, 92%);
+      margin: 0 auto;
+    }
+
+    .header {
+      background: var(--primary);
+      color: white;
+    }
+
+    .header-inner {
+      min-height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+    }
+
+    .brand {
+      flex-shrink: 0;
+      color: white;
+      font-size: 23px;
+      font-weight: 800;
+    }
+
+    .brand span { color: #4fe0d0; }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+
+    .nav a {
+      color: #e5edf3;
+      font-size: 13px;
+    }
+
+    .nav a:hover, .nav a[aria-current="page"] {
+      color: #55e0d0;
+    }
+
+    .nav .nav-cta {
+      padding: 9px 14px;
+      border-radius: 8px;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+    }
+
+    .hero {
+      background:
+        radial-gradient(circle at 88% 18%, rgba(18,170,159,.12), transparent 30%),
+        linear-gradient(110deg, #e3f7f3, #edf3fc);
+    }
+
+    .hero-inner { padding: 34px 0 36px; }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--accent-dark);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--primary);
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.35;
+    }
+
+    .hero p:last-child {
+      max-width: 650px;
+      color: #637a8c;
+      line-height: 1.9;
+    }
+
+    main { padding: 30px 0 60px; }
+
+    .panel {
+      padding: 25px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: white;
+      box-shadow: var(--shadow);
+    }
+
+    .panel h2 {
+      margin: 0;
+      color: var(--primary);
+      font-size: 19px;
+    }
+
+    .muted {
+      margin: 4px 0 20px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px 20px;
+    }
+
+    .field { min-width: 0; }
+
+    .field label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .field select, .field input {
+      width: 100%;
+      min-width: 0;
+      height: 46px;
+      padding: 10px 12px;
+      border: 1px solid #cbd8e5;
+      border-radius: 8px;
+      background: white;
+      color: var(--text);
+    }
+
+    .primary-button {
+      display: inline-flex;
+      min-height: 45px;
+      align-items: center;
+      justify-content: center;
+      padding: 11px 18px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--accent);
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .primary-button:hover { background: var(--accent-dark); }
+
+    .primary-button:disabled {
+      opacity: .65;
+      cursor: wait;
+    }
+
+    #srSearchButton {
+      width: 100%;
+      margin-top: 22px;
+    }
+
+    .error {
+      margin-top: 15px;
+      padding: 12px 14px;
+      border: 1px solid #f0c5c5;
+      border-radius: 8px;
+      background: #fff1f1;
+      color: #a61b1b;
+    }
+
+    .notice {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .results { margin-top: 35px; scroll-margin-top: 20px; }
+
+    .results-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .results-header h2 {
+      margin: 0;
+      color: var(--primary);
+      font-size: 25px;
+    }
+
+    .results-count { color: var(--muted); }
+    .trip-list { display: grid; gap: 15px; }
+
+    .trip-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 22px;
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: white;
+      box-shadow: 0 4px 16px rgba(18,59,82,.035);
+    }
+
+    .trip-left { min-width: 0; }
+
+    .trip-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 11px;
+    }
+
+    .trip-id {
+      padding: 4px 9px;
+      border-radius: 6px;
+      background: var(--soft);
+      color: var(--accent-dark);
+      font-weight: 800;
+    }
+
+    .trip-tag { color: var(--muted); font-size: 12px; }
+
+    .trip-route {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin: 0 0 15px;
+      color: var(--primary);
+      font-size: 20px;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .route-arrow { color: var(--accent-dark); }
+
+    .trip-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 20px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .trip-right { min-width: 150px; text-align: right; }
+
+    .price-caption, .price-unit {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .trip-price {
+      color: var(--primary);
+      font-size: 27px;
+      font-weight: 800;
+    }
+
+    .book-button {
+      display: inline-flex;
+      min-height: 42px;
+      align-items: center;
+      justify-content: center;
+      margin-top: 12px;
+      padding: 10px 17px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--accent);
+      color: white;
+      font-weight: 800;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .book-button:hover:not(:disabled) { background: var(--accent-dark); }
+
+    .book-button:disabled {
+      background: #8b99a6;
+      cursor: not-allowed;
+    }
+
+    .empty-state {
+      padding: 38px 20px;
+      border: 1px dashed #cbd8e5;
+      border-radius: 12px;
+      background: white;
+      text-align: center;
+    }
+
+    .empty-state h3 {
+      margin: 0 0 7px;
+      color: var(--primary);
+      font-size: 18px;
+    }
+
+    .empty-state p { margin: 0; color: var(--muted); }
+
+    footer {
+      padding: 25px 0;
+      border-top: 1px solid var(--border);
+      background: white;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .footer-brand { color: var(--primary); font-weight: 800; }
+    .footer-brand span { color: var(--accent-dark); }
+    .footer-copy { margin: 0; color: var(--muted); font-size: 12px; }
+
+    @media (max-width: 760px) {
+      .header-inner {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 14px 0;
+        gap: 13px;
+      }
+
+      .nav { justify-content: flex-start; gap: 13px; }
+      .panel { padding: 19px; }
+
+      .trip-card {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 17px;
+        padding: 19px;
+      }
+
+      .trip-right {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        text-align: left;
+      }
+
+      .book-button { margin-top: 0; }
+    }
+
+    @media (max-width: 480px) {
+      .form-grid { grid-template-columns: minmax(0, 1fr); }
+      .trip-meta { flex-direction: column; gap: 8px; }
+      .trip-route { font-size: 18px; }
+      .trip-price { font-size: 24px; }
+      .footer-inner { flex-direction: column; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html">Smart<span>Transit</span></a>
+
+      <nav class="nav" aria-label="เมนูหลัก">
+        <a href="index.html">หน้าหลัก</a>
+        <a href="search.html" aria-current="page">ค้นหาเที่ยวรถ</a>
+        <a href="history.html">ประวัติการจอง</a>
+        <a href="login.html">เข้าสู่ระบบ</a>
+        <a class="nav-cta" href="#searchForm">เริ่มค้นหา</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container hero-inner">
+      <p class="eyebrow">PLAN YOUR JOURNEY</p>
+      <h1>ค้นหาเที่ยวรถที่ใช่<br>สำหรับการเดินทางของคุณ</h1>
+      <p>เลือกต้นทาง ปลายทาง วันที่ และจำนวนผู้โดยสาร เพื่อดูเที่ยวรถที่มีที่นั่งว่าง</p>
+    </div>
+  </section>
+
+  <main class="container">
+    <section class="panel" id="searchForm">
+      <h2>กรอกข้อมูลการเดินทาง</h2>
+      <p class="muted">เลือกเส้นทาง วันที่ และจำนวนผู้โดยสาร</p>
+
+      <form id="srSearchForm">
+        <div class="form-grid">
+          <div class="field">
+            <label for="srOrigin">ต้นทาง</label>
+            <select id="srOrigin" name="origin" required>
+              <option value="กรุงเทพฯ">กรุงเทพฯ</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="srDestination">ปลายทาง</label>
+            <select id="srDestination" name="destination">
+              <option value="">ทุกปลายทาง</option>
+              <option value="หัวหิน">หัวหิน</option>
+              <option value="พัทยา">พัทยา</option>
+              <option value="อยุธยา">อยุธยา</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="srTravelDate">วันที่เดินทาง</label>
+            <input type="date" id="srTravelDate" name="date" required>
+          </div>
+
+          <div class="field">
+            <label for="srPassengers">จำนวนผู้โดยสาร</label>
+            <select id="srPassengers" name="passengers" required>
+              <option value="1">1 คน</option>
+              <option value="2">2 คน</option>
+              <option value="3">3 คน</option>
+              <option value="4">4 คน</option>
+              <option value="5">5 คน</option>
+              <option value="6">6 คน</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="primary-button" id="srSearchButton" type="submit">
+          ค้นหาเที่ยวรถ
+        </button>
+
+        <div id="srSearchError" class="error" role="alert" hidden></div>
+        <p class="notice">ที่นั่งว่างอาจเปลี่ยนแปลงได้ โปรดตรวจสอบอีกครั้งเมื่อทำการจอง</p>
+      </form>
+    </section>
+
+    <section class="results" id="srResults" aria-labelledby="srResultsTitle">
+      <div class="results-header">
+        <div>
+          <p class="eyebrow">AVAILABLE TRIPS</p>
+          <h2 id="srResultsTitle">เที่ยวรถที่ให้บริการ</h2>
+        </div>
+        <span class="results-count" id="srResultCount" aria-live="polite">กำลังโหลดเที่ยวรถ...</span>
+      </div>
+
+      <div class="trip-list" id="srTripList"></div>
+
+      <div class="empty-state" id="srEmptyState" hidden>
+        <h3>ไม่พบเที่ยวรถที่ตรงกับการค้นหา</h3>
+        <p>ลองเปลี่ยนวันที่ ปลายทาง หรือจำนวนผู้โดยสาร</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <a class="footer-brand" href="index.html">Smart<span>Transit</span></a>
+      <p class="footer-copy">© SmartTransit — ระบบจองตั๋วรถโดยสารออนไลน์</p>
+    </div>
+  </footer>
+
+  <script>
+    "use strict";
+
+    const API_BASE = "/api";
+
+    const form = document.getElementById("srSearchForm");
+    const originSelect = document.getElementById("srOrigin");
+    const destinationSelect = document.getElementById("srDestination");
+    const dateInput = document.getElementById("srTravelDate");
+    const passengersSelect = document.getElementById("srPassengers");
+    const searchButton = document.getElementById("srSearchButton");
+    const errorBox = document.getElementById("srSearchError");
+    const tripList = document.getElementById("srTripList");
+    const resultCount = document.getElementById("srResultCount");
+    const emptyState = document.getElementById("srEmptyState");
+    const resultsSection = document.getElementById("srResults");
+
+    let allTrips = [];
+    let hasSearched = false;
+    let requestNumber = 0;
+
+    function localDateString() {
+      const now = new Date();
+
+      return [
+        now.getFullYear(),
+        String(now.getMonth() + 1).padStart(2, "0"),
+        String(now.getDate()).padStart(2, "0")
+      ].join("-");
+    }
+
+    function setError(message) {
+      errorBox.textContent = message;
+      errorBox.hidden = !message;
+    }
+
+    function textElement(tag, className, text) {
+      const element = document.createElement(tag);
+
+      if (className) element.className = className;
+      element.textContent = String(text ?? "");
+
+      return element;
+    }
+
+    function formatDate(value) {
+      if (!value) return "-";
+
+      const parts = value.split("-");
+      if (parts.length !== 3) return value;
+
+      const date = new Date(
+        Number(parts[0]),
+        Number(parts[1]) - 1,
+        Number(parts[2])
+      );
+
+      return Number.isNaN(date.getTime())
+        ? value
+        : date.toLocaleDateString("th-TH", {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+          });
+    }
+
+    // API ใช้ชื่อฟิลด์ departure และ arrival
+    function makeBookingUrl(trip) {
+      const params = new URLSearchParams({
+        tripId: String(trip.tripId),
+        origin: String(trip.origin),
+        destination: String(trip.destination),
+        date: dateInput.value,
+        departure: String(trip.departure),
+        arrival: String(trip.arrival),
+        passengers: passengersSelect.value
+      });
+
+      return `booking.html?${params.toString()}`;
+    }
+
+    function makeTripCard(trip) {
+      const card = document.createElement("article");
+      card.className = "trip-card";
+
+      const left = document.createElement("div");
+      left.className = "trip-left";
+
+      const top = document.createElement("div");
+      top.className = "trip-top";
+      top.appendChild(textElement("span", "trip-id", trip.tripId));
+      top.appendChild(textElement("span", "trip-tag", "เที่ยวรถโดยสาร"));
+
+      const route = document.createElement("h3");
+      route.className = "trip-route";
+      route.appendChild(textElement("span", "", trip.origin));
+      route.appendChild(textElement("span", "route-arrow", "→"));
+      route.appendChild(textElement("span", "", trip.destination));
+
+      const meta = document.createElement("div");
+      meta.className = "trip-meta";
+
+      meta.appendChild(textElement(
+        "span", "", `ออกเดินทาง ${trip.departure} น.`
+      ));
+      meta.appendChild(textElement(
+        "span", "", `ถึงปลายทาง ${trip.arrival} น.`
+      ));
+      meta.appendChild(textElement(
+        "span", "", `วันที่ ${formatDate(dateInput.value)}`
+      ));
+      meta.appendChild(textElement(
+        "span", "", `ที่นั่งว่าง ${trip.availableSeats} ที่นั่ง`
+      ));
+
+      left.append(top, route, meta);
+
+      const right = document.createElement("div");
+      right.className = "trip-right";
+
+      const price = Number(trip.price);
+      const passengers = Number(passengersSelect.value);
+      const seats = Number(trip.availableSeats);
+      const validPrice = Number.isFinite(price) && price >= 0;
+
+      const priceBlock = document.createElement("div");
+      priceBlock.appendChild(textElement(
+        "span", "price-caption", "ราคาต่อคน"
+      ));
+      priceBlock.appendChild(textElement(
+        "div",
+        "trip-price",
+        validPrice ? `฿${price.toLocaleString("th-TH")}` : "ไม่ระบุ"
+      ));
+      priceBlock.appendChild(textElement(
+        "span",
+        "price-unit",
+        validPrice
+          ? `รวม ${passengers} คน: ฿${(price * passengers).toLocaleString("th-TH")}`
+          : "ไม่สามารถคำนวณราคาได้"
+      ));
+
+      const bookButton = document.createElement("button");
+      bookButton.type = "button";
+      bookButton.className = "book-button";
+
+      if (!validPrice || !Number.isFinite(seats) || seats < passengers) {
+        bookButton.disabled = true;
+        bookButton.textContent = "ที่นั่งไม่เพียงพอ";
+      } else {
+        bookButton.textContent = "จองเที่ยวนี้";
+        bookButton.addEventListener("click", () => {
+          window.location.href = makeBookingUrl(trip);
+        });
+      }
+
+      right.append(priceBlock, bookButton);
+      card.append(left, right);
+
+      return card;
+    }
+
+    function renderTrips(trips) {
+      tripList.replaceChildren();
+
+      trips.forEach(trip => {
+        tripList.appendChild(makeTripCard(trip));
+      });
+
+      emptyState.hidden = trips.length !== 0;
+
+      resultCount.textContent = hasSearched
+        ? `พบ ${trips.length} เที่ยวรถ`
+        : `เที่ยวรถ ${trips.length} รายการ`;
+    }
+
+    function filterTrips() {
+      const origin = originSelect.value;
+      const destination = destinationSelect.value;
+      const passengers = Number(passengersSelect.value);
+
+      const filtered = allTrips.filter(trip => {
+        const matchesOrigin = trip.origin === origin;
+        const matchesDestination =
+          !destination || trip.destination === destination;
+
+        // แสดงเที่ยวรถของเส้นทางที่เลือกไว้
+        // ถ้าที่นั่งไม่พอ จะแสดงการ์ดแต่ปิดปุ่มจอง
+        return matchesOrigin && matchesDestination;
+      });
+
+      renderTrips(filtered);
+    }
+
+    async function loadTrips() {
+      const currentRequest = ++requestNumber;
+
+      setError("");
+      searchButton.disabled = true;
+      searchButton.textContent = "กำลังโหลด...";
+      resultCount.textContent = "กำลังโหลดเที่ยวรถ...";
+      tripList.replaceChildren();
+      emptyState.hidden = true;
+
+      try {
+        const params = new URLSearchParams({
+          date: dateInput.value
+        });
+
+        const response = await fetch(
+          `${API_BASE}/trips?${params.toString()}`
+        );
+
+        // ตรวจสอบ HTTP status และ JSON
+        const data = await response.json();
+
+        if (!response.ok || data.success !== true) {
+          throw new Error(
+            data.message || `โหลดข้อมูลไม่สำเร็จ (HTTP ${response.status})`
+          );
+        }
+
+        if (!Array.isArray(data.trips)) {
+          throw new Error("ข้อมูลเที่ยวรถจาก API ไม่ถูกต้อง");
+        }
+
+        if (currentRequest !== requestNumber) return;
+
+        // ตรวจสอบข้อมูลขั้นต่ำจาก API
+        allTrips = data.trips.filter(trip =>
+          trip &&
+          trip.tripId != null &&
+          typeof trip.origin === "string" &&
+          typeof trip.destination === "string" &&
+          trip.departure != null &&
+          trip.arrival != null &&
+          Number.isFinite(Number(trip.price)) &&
+          Number.isFinite(Number(trip.availableSeats))
+        );
+
+        hasSearched = true;
+        filterTrips();
+
+      } catch (error) {
+        if (currentRequest !== requestNumber) return;
+
+        console.error("Load trips error:", error);
+
+        allTrips = [];
+        tripList.replaceChildren();
+        emptyState.hidden = true;
+        resultCount.textContent = "โหลดข้อมูลไม่สำเร็จ";
+
+        setError(
+          "ไม่สามารถโหลดเที่ยวรถจากเซิร์ฟเวอร์ได้ กรุณาตรวจสอบว่า Backend ทำงานอยู่ และมี API /api/trips"
+        );
+      } finally {
+        if (currentRequest === requestNumber) {
+          searchButton.disabled = false;
+          searchButton.textContent = "ค้นหาเที่ยวรถ";
+        }
+      }
+    }
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      setError("");
+
+      if (!dateInput.value) {
+        setError("กรุณาเลือกวันที่เดินทาง");
+        dateInput.focus();
+        return;
+      }
+
+      if (dateInput.value < localDateString()) {
+        setError("วันที่เดินทางต้องไม่เป็นวันที่ผ่านมาแล้ว");
+        dateInput.focus();
+        return;
+      }
+
+      const passengers = Number(passengersSelect.value);
+
+      if (!Number.isInteger(passengers) || passengers < 1 || passengers > 6) {
+        setError("กรุณาเลือกจำนวนผู้โดยสารให้ถูกต้อง");
+        passengersSelect.focus();
+        return;
+      }
+
+      hasSearched = true;
+      await loadTrips();
+
+      resultsSection.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    });
+
+    dateInput.addEventListener("change", () => {
+      if (!dateInput.value || dateInput.value < localDateString()) {
+        setError("กรุณาเลือกวันที่ตั้งแต่วันนี้เป็นต้นไป");
+        return;
+      }
+
+      setError("");
+
+      if (hasSearched) {
+        loadTrips();
+      }
+    });
+
+    originSelect.addEventListener("change", filterTrips);
+    destinationSelect.addEventListener("change", filterTrips);
+    passengersSelect.addEventListener("change", filterTrips);
+
+    dateInput.min = localDateString();
+    dateInput.value = localDateString();
+
+    // โหลดข้อมูลเที่ยวรถเมื่อเปิดหน้า
+    loadTrips();
+  </script>
+</body>
+</html>

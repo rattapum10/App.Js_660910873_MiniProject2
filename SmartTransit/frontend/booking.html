@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>จองตั๋วรถโดยสาร | SmartTransit</title>
+  <meta name="description" content="จองตั๋วรถโดยสารและตรวจสอบรายละเอียดการจองผ่าน SmartTransit">
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/booking.css">
+
+  <style>
+    [hidden] { display: none !important; }
+
+    :root {
+      --booking-primary: #123b52;
+      --booking-accent: #12aa9f;
+      --booking-accent-dark: #0d8f86;
+      --booking-bg: #f3f7fa;
+      --booking-text: #203449;
+      --booking-muted: #718297;
+      --booking-border: #e1e9f0;
+      --booking-soft: #e5f7f4;
+      --booking-success: #168344;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--booking-text);
+      background: var(--booking-bg);
+      font-family: Arial, Tahoma, sans-serif;
+      line-height: 1.6;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .booking-header {
+      background: var(--booking-primary);
+      color: #fff;
+    }
+
+    .booking-header-inner {
+      width: min(1120px, 92%);
+      min-height: 70px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .booking-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+      font-size: 23px;
+      font-weight: 800;
+      letter-spacing: -.6px;
+    }
+
+    .booking-brand-mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: var(--booking-accent);
+      color: white;
+      font-size: 22px;
+    }
+
+    .brand-highlight { color: #4fe0d0; }
+
+    .booking-nav {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .booking-nav a { color: #e4edf4; font-size: 13px; }
+    .booking-nav a:hover { color: #59e0d0; }
+
+    .booking-container {
+      width: min(1120px, 92%);
+      margin: 32px auto 60px;
+    }
+
+    .page-eyebrow {
+      margin: 0 0 8px;
+      color: var(--booking-accent-dark);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+    }
+
+    .page-title {
+      margin: 0;
+      color: var(--booking-primary);
+      font-size: clamp(27px, 3.5vw, 36px);
+      line-height: 1.3;
+    }
+
+    .page-description {
+      margin: 12px 0 25px;
+      color: var(--booking-muted);
+      font-size: 14px;
+    }
+
+    .booking-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .booking-card {
+      padding: 24px;
+      border: 1px solid var(--booking-border);
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 8px 28px rgba(18, 59, 82, .06);
+    }
+
+    .card-heading {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 0 20px;
+      color: var(--booking-primary);
+      font-size: 19px;
+      font-weight: 800;
+    }
+
+    .card-heading-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      border-radius: 11px;
+      background: var(--booking-soft);
+      color: var(--booking-accent-dark);
+      font-size: 22px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid #edf1f5;
+    }
+
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { color: var(--booking-muted); font-size: 13px; }
+    .detail-value {
+      color: var(--booking-text);
+      font-size: 14px;
+      font-weight: 700;
+      text-align: right;
+      overflow-wrap: anywhere;
+    }
+
+    .total-price-panel {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 20px;
+      padding: 17px;
+      border-radius: 10px;
+      background: var(--booking-soft);
+    }
+
+    .total-price-label { color: var(--booking-primary); font-weight: 800; }
+    .total-price-value { color: var(--booking-accent-dark); font-size: 27px; font-weight: 800; }
+
+    .form-group { margin-bottom: 17px; }
+    .form-group label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--booking-primary);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .required-mark { color: #c62828; }
+
+    .form-group input,
+    .form-group textarea {
+      display: block;
+      width: 100%;
+      min-height: 45px;
+      padding: 11px 12px;
+      border: 1px solid #cbd8e5;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--booking-text);
+      font: inherit;
+      font-size: 14px;
+    }
+
+    .form-group textarea { min-height: 90px; resize: vertical; }
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--booking-accent);
+      box-shadow: 0 0 0 3px rgba(18, 170, 159, .12);
+    }
+
+    .form-hint { margin: 6px 0 0; color: var(--booking-muted); font-size: 12px; }
+
+    .booking-error {
+      margin-bottom: 17px;
+      padding: 12px 14px;
+      border: 1px solid #efcaca;
+      border-radius: 8px;
+      background: #fff1f1;
+      color: #a61b1b;
+      font-size: 13px;
+    }
+
+    .primary-button {
+      display: flex;
+      width: 100%;
+      min-height: 47px;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 18px;
+      border: none;
+      border-radius: 9px;
+      background: var(--booking-accent);
+      color: #fff;
+      font: inherit;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    .primary-button:hover { background: var(--booking-accent-dark); }
+    .primary-button:disabled { opacity: .65; cursor: not-allowed; }
+
+    .secondary-link {
+      display: block;
+      margin-top: 13px;
+      color: var(--booking-accent-dark);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    /* Ticket summary shown after a successful API response */
+    .success-card {
+      max-width: 780px;
+      margin: 25px auto 0;
+      overflow: hidden;
+      border: 1px solid var(--booking-border);
+      border-radius: 18px;
+      background: #fff;
+      box-shadow: 0 12px 36px rgba(18, 59, 82, .08);
+    }
+
+    .success-header {
+      padding: 30px 24px 25px;
+      background: linear-gradient(120deg, #e4f8f0, #edf7fc);
+      text-align: center;
+    }
+
+    .success-check {
+      width: 68px;
+      height: 68px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 15px;
+      border-radius: 50%;
+      background: #d5f4e1;
+      color: var(--booking-success);
+      font-size: 38px;
+      font-weight: 800;
+      box-shadow: 0 0 0 8px rgba(255,255,255,.6);
+    }
+
+    .success-title {
+      margin: 0;
+      color: var(--booking-primary);
+      font-size: clamp(23px, 3vw, 30px);
+      line-height: 1.35;
+    }
+
+    .success-description {
+      margin: 9px 0 0;
+      color: #61778a;
+      font-size: 14px;
+    }
+
+    .ticket-content { padding: 25px; }
+
+    .booking-code-panel {
+      margin-bottom: 22px;
+      padding: 16px;
+      border: 1px dashed #b8d9d3;
+      border-radius: 10px;
+      background: #f8fcfb;
+      text-align: center;
+    }
+
+    .booking-code-label {
+      display: block;
+      color: var(--booking-muted);
+      font-size: 12px;
+    }
+
+    .booking-code-value {
+      display: block;
+      margin-top: 4px;
+      color: var(--booking-accent-dark);
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      overflow-wrap: anywhere;
+    }
+
+    .ticket-section-title {
+      margin: 0 0 6px;
+      color: var(--booking-primary);
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .ticket-section-caption {
+      margin: 0 0 14px;
+      color: var(--booking-muted);
+      font-size: 12px;
+    }
+
+    .ticket-total {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 22px;
+      padding: 17px;
+      border-radius: 10px;
+      background: var(--booking-primary);
+      color: #fff;
+    }
+
+    .ticket-total-label { color: #dceaf0; font-size: 13px; }
+    .ticket-total-value { font-size: 27px; font-weight: 800; }
+
+    .success-note {
+      margin: 18px 0 0;
+      color: var(--booking-muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .success-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 0 25px 25px;
+    }
+
+    .success-actions a {
+      display: inline-flex;
+      flex: 1 1 190px;
+      min-height: 45px;
+      align-items: center;
+      justify-content: center;
+      padding: 11px 16px;
+      border-radius: 9px;
+      background: var(--booking-accent);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .success-actions a:hover { background: var(--booking-accent-dark); }
+    .success-actions a.secondary {
+      border: 1px solid var(--booking-border);
+      background: #fff;
+      color: var(--booking-primary);
+    }
+    .success-actions a.secondary:hover { background: #f4f8fa; }
+
+    .booking-footer {
+      padding: 23px 4%;
+      border-top: 1px solid var(--booking-border);
+      background: #fff;
+      color: var(--booking-muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .booking-footer p { margin: 0; }
+
+    @media (max-width: 760px) {
+      .booking-header-inner {
+        padding: 13px 0;
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .booking-nav { gap: 14px; }
+      .booking-nav a { font-size: 12px; }
+      .booking-container { margin-top: 24px; }
+      .booking-grid { grid-template-columns: minmax(0, 1fr); }
+      .booking-card { padding: 19px; }
+      .ticket-content { padding: 19px; }
+      .success-header { padding: 25px 18px 22px; }
+      .success-actions { padding: 0 19px 19px; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .booking-header,
+      .booking-footer,
+      #bookingContent,
+      .success-actions,
+      .success-note { display: none !important; }
+      .booking-container { width: 100%; margin: 0; padding: 0; }
+      .success-card { display: block !important; max-width: none; margin: 0; box-shadow: none; }
+    }
+  </style>
+
+  <script src="js/booking.js?v=6" defer></script>
+</head>
+<body>
+  <header class="booking-header">
+    <div class="booking-header-inner">
+      <a class="booking-brand" href="index.html" aria-label="SmartTransit หน้าหลัก">
+        <span class="booking-brand-mark" aria-hidden="true">↗</span>
+        <span>Smart<span class="brand-highlight">Transit</span></span>
+      </a>
+      <nav class="booking-nav" aria-label="เมนูหลัก">
+        <a href="index.html">หน้าหลัก</a>
+        <a href="search.html">ค้นหาเที่ยวรถ</a>
+        <a href="history.html">ประวัติการจอง</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="booking-container">
+    <section id="bookingContent">
+      <p class="page-eyebrow">SMARTTRANSIT BOOKING</p>
+      <h1 class="page-title">จองตั๋วรถโดยสาร</h1>
+      <p class="page-description">ตรวจสอบรายละเอียดเที่ยวรถและกรอกข้อมูลผู้จองให้ครบถ้วน</p>
+
+      <div class="booking-grid">
+        <section class="booking-card" aria-labelledby="tripHeading">
+          <h2 class="card-heading" id="tripHeading">
+            <span class="card-heading-icon" aria-hidden="true">🎫</span>
+            รายละเอียดเที่ยวรถ
+          </h2>
+
+          <div class="detail-row">
+            <span class="detail-label">รหัสเที่ยวรถ</span>
+            <span class="detail-value" id="tripIdText">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">ต้นทาง</span>
+            <span class="detail-value" id="originText">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">ปลายทาง</span>
+            <span class="detail-value" id="destinationText">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">วันที่เดินทาง</span>
+            <span class="detail-value" id="dateText">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">เวลาออกเดินทาง</span>
+            <span class="detail-value" id="departureText">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">เวลาถึงปลายทาง</span>
+            <span class="detail-value" id="arrivalText">-</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">จำนวนผู้โดยสาร</span>
+            <span class="detail-value" id="passengersText">-</span>
+          </div>
+
+          <div class="total-price-panel">
+            <span class="total-price-label">ราคารวม</span>
+            <span class="total-price-value" id="totalPrice">฿0</span>
+          </div>
+        </section>
+
+        <section class="booking-card" aria-labelledby="formHeading">
+          <h2 class="card-heading" id="formHeading">
+            <span class="card-heading-icon" aria-hidden="true">♙</span>
+            ข้อมูลผู้จอง
+          </h2>
+
+          <div id="bookingError" class="booking-error" role="alert" aria-live="polite" hidden></div>
+
+          <form id="bookingForm" autocomplete="on">
+            <div class="form-group">
+              <label for="fullName">ชื่อ-นามสกุล <span class="required-mark">*</span></label>
+              <input
+                type="text"
+                id="fullName"
+                name="fullName"
+                placeholder="กรอกชื่อ-นามสกุล"
+                autocomplete="name"
+                maxlength="150"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="phone">หมายเลขโทรศัพท์ <span class="required-mark">*</span></label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                placeholder="เช่น 0812345678"
+                autocomplete="tel"
+                inputmode="tel"
+                maxlength="20"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="email">อีเมล <span class="required-mark">*</span></label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="กรอกอีเมลของคุณ"
+                autocomplete="email"
+                maxlength="254"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="notes">หมายเหตุเพิ่มเติม (ถ้ามี)</label>
+              <textarea
+                id="notes"
+                name="notes"
+                placeholder="รายละเอียดเพิ่มเติม..."
+                maxlength="1000"
+              ></textarea>
+            </div>
+
+            <button type="submit" class="primary-button" id="submitBooking">
+              ยืนยันการจอง
+            </button>
+
+            <a class="secondary-link" href="search.html">กลับไปเลือกเที่ยวรถ</a>
+          </form>
+        </section>
+      </div>
+    </section>
+
+    <!-- Success summary stays visible until the user chooses another page. -->
+    <section
+      id="bookingConfirmation"
+      class="success-card"
+      aria-live="polite"
+      aria-labelledby="confirmationMessage"
+      hidden
+    >
+      <div class="success-header">
+        <div class="success-check" aria-hidden="true">✓</div>
+        <h1 class="success-title" id="confirmationMessage">จองเที่ยวรถสำเร็จแล้ว</h1>
+        <p class="success-description">ระบบบันทึกคำขอจองของคุณสำเร็จแล้ว กรุณาตรวจสอบสรุปการจองด้านล่าง</p>
+      </div>
+
+      <div class="ticket-content">
+        <div class="booking-code-panel">
+          <span class="booking-code-label">รหัสการจอง (Booking Code / ID)</span>
+          <strong class="booking-code-value" id="confirmationBookingId">รอรับรหัสจากระบบ</strong>
+        </div>
+
+        <h2 class="ticket-section-title">สรุปการเดินทาง</h2>
+        <p class="ticket-section-caption">โปรดตรวจสอบรายละเอียดก่อนออกจากหน้านี้</p>
+
+        <div class="detail-row">
+          <span class="detail-label">ชื่อผู้จอง</span>
+          <span class="detail-value" id="confirmationFullName">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">รหัสเที่ยวรถ</span>
+          <span class="detail-value" id="confirmationTripId">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">ต้นทาง</span>
+          <span class="detail-value" id="confirmationOrigin">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">ปลายทาง</span>
+          <span class="detail-value" id="confirmationDestination">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">วันที่เดินทาง</span>
+          <span class="detail-value" id="confirmationDate">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">เวลาออกเดินทาง</span>
+          <span class="detail-value" id="confirmationDeparture">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">เวลาถึงปลายทาง</span>
+          <span class="detail-value" id="confirmationArrival">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">จำนวนผู้โดยสาร</span>
+          <span class="detail-value" id="confirmationPassengers">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">โทรศัพท์ติดต่อ</span>
+          <span class="detail-value" id="confirmationPhone">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">อีเมล</span>
+          <span class="detail-value" id="confirmationEmail">-</span>
+        </div>
+
+        <div class="ticket-total">
+          <span class="ticket-total-label">ราคารวมทั้งหมด</span>
+          <span class="ticket-total-value" id="confirmationPrice">฿0</span>
+        </div>
+
+        <p class="success-note">
+          คุณสามารถแคปหน้าจอนี้หรือใช้คำสั่งพิมพ์ของเบราว์เซอร์เพื่อบันทึกสรุปการจองไว้ได้
+        </p>
+      </div>
+
+      <div class="success-actions">
+        <a href="history.html" id="goHistoryBtn">ดูประวัติการจอง</a>
+        <a href="index.html" id="goHomeBtn" class="secondary">กลับหน้าหลัก</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="booking-footer">
+    <p>© SmartTransit — ระบบจองตั๋วรถโดยสารออนไลน์</p>
+  </footer>
+</body>
+</html>

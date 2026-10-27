@@ -1,0 +1,16 @@
+﻿.env
+.env.*
+!.env.example
+
+**/node_modules/
+**/.DS_Store
+
+# Local SQLite databases and backups
+database/*.db
+database/*.db-*
+**/*.sqlite
+**/*.sqlite3
+
+# Logs
+npm-debug.log*
+*.log

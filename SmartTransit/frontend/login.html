@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เข้าสู่ระบบ | SmartTransit</title>
+  <meta name="description" content="เข้าสู่ระบบหรือสมัครสมาชิก SmartTransit เพื่อจัดการการจองเที่ยวรถ">
+
+  <style>
+    :root {
+      --auth-primary: #123b52;
+      --auth-accent: #12aa9f;
+      --auth-accent-dark: #0d8f86;
+      --auth-background: #f3f7fa;
+      --auth-text: #203449;
+      --auth-muted: #718297;
+      --auth-border: #e1e9f0;
+      --auth-soft: #e5f7f4;
+    }
+
+    [hidden] { display: none !important; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--auth-text);
+      background: var(--auth-background);
+      font-family: Arial, Tahoma, sans-serif;
+      line-height: 1.6;
+    }
+    a { text-decoration: none; }
+    button, input { font: inherit; }
+    button:focus-visible, a:focus-visible, input:focus-visible {
+      outline: 3px solid #55d9ce;
+      outline-offset: 3px;
+    }
+
+    .auth-header { background: var(--auth-primary); color: #fff; }
+    .auth-header-inner {
+      width: min(1120px, 92%);
+      min-height: 70px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .auth-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      color: #fff;
+      font-size: 23px;
+      font-weight: 800;
+      letter-spacing: -.6px;
+    }
+    .auth-brand-mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: var(--auth-accent);
+      color: #fff;
+      font-size: 22px;
+    }
+    .auth-brand-highlight { color: #4fe0d0; }
+    .auth-nav { display: flex; align-items: center; flex-wrap: wrap; gap: 20px; }
+    .auth-nav a { color: #e5edf3; font-size: 13px; }
+    .auth-nav a:hover, .auth-nav a[aria-current="page"] { color: #55e0d0; }
+
+    .auth-main { width: min(1080px, 92%); margin: 38px auto 56px; }
+    .auth-layout {
+      display: grid;
+      grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
+      gap: 28px;
+      align-items: stretch;
+    }
+    .auth-intro {
+      position: relative;
+      overflow: hidden;
+      padding: 34px;
+      border-radius: 17px;
+      background: linear-gradient(145deg, #123b52, #1b6471);
+      color: #fff;
+    }
+    .auth-intro::after {
+      position: absolute;
+      width: 250px;
+      height: 250px;
+      right: -110px;
+      bottom: -105px;
+      border: 1px solid #ffffff30;
+      border-radius: 50%;
+      box-shadow: 0 0 0 28px #ffffff0a, 0 0 0 60px #ffffff07;
+      content: "";
+      pointer-events: none;
+    }
+    .auth-intro-icon {
+      display: grid;
+      width: 58px;
+      height: 58px;
+      place-items: center;
+      border-radius: 15px;
+      background: var(--auth-accent);
+      color: #fff;
+    }
+    .auth-intro-icon svg { display: block; width: 30px; height: 30px; }
+    .auth-eyebrow {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 22px 0 0;
+      color: #63e0cf;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.4px;
+    }
+    .auth-eyebrow-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--auth-accent); }
+    .auth-intro h2 { position: relative; z-index: 1; margin: 15px 0 10px; font-size: 30px; line-height: 1.4; }
+    .auth-intro-description { position: relative; z-index: 1; color: #d4e9eb; font-size: 14px; line-height: 1.9; }
+    .auth-benefits { position: relative; z-index: 1; display: grid; gap: 14px; margin-top: 28px; }
+    .auth-benefit { display: flex; align-items: center; gap: 10px; color: #e4f2f3; font-size: 13px; }
+    .auth-benefit svg { display: block; width: 18px; height: 18px; flex: 0 0 18px; color: #63e0cf; }
+
+    .auth-panel {
+      min-width: 0;
+      padding: 29px;
+      border: 1px solid var(--auth-border);
+      border-radius: 17px;
+      background: #fff;
+      box-shadow: 0 8px 28px rgba(18, 59, 82, .06);
+    }
+    .auth-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+      margin-bottom: 24px;
+      padding: 5px;
+      border-radius: 10px;
+      background: #f0f5f8;
+    }
+    .auth-tab {
+      min-height: 42px;
+      padding: 9px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--auth-muted);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .auth-tab[aria-selected="true"] { background: #fff; color: var(--auth-primary); box-shadow: 0 2px 8px #123b5210; }
+    .auth-panel-title { margin: 0 0 6px; color: var(--auth-primary); font-size: 25px; }
+    .auth-subtitle { margin: 0 0 21px; color: var(--auth-muted); font-size: 13px; }
+    .auth-message { margin-bottom: 17px; padding: 11px 13px; border-radius: 8px; font-size: 13px; overflow-wrap: anywhere; }
+    .auth-message.error { border: 1px solid #f2b8b5; background: #fff0f0; color: #a61b1b; }
+    .auth-message.success { border: 1px solid #b9e8c8; background: #e2f7e9; color: #17663a; }
+    .auth-field { margin-bottom: 17px; }
+    .auth-field label { display: block; margin-bottom: 7px; color: var(--auth-primary); font-size: 13px; font-weight: 700; }
+    .auth-field input {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      height: 46px;
+      padding: 10px 12px;
+      border: 1px solid #cbd8e5;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--auth-text);
+      font-size: 14px;
+    }
+    .auth-field input:focus { border-color: var(--auth-accent); outline: none; box-shadow: 0 0 0 3px #12aa9f1f; }
+    .auth-password-wrap { position: relative; }
+    .auth-password-wrap input { padding-right: 52px; }
+
+    /* ปุ่มตาถูกกำหนดขนาดโดยตรง เพื่อไม่ให้ CSS อื่นขยายไอคอน */
+    .password-toggle {
+      appearance: none !important;
+      -webkit-appearance: none !important;
+      position: absolute !important;
+      top: 50% !important;
+      right: 6px !important;
+      display: grid !important;
+      width: 36px !important;
+      min-width: 36px !important;
+      max-width: 36px !important;
+      height: 36px !important;
+      min-height: 36px !important;
+      max-height: 36px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      place-items: center !important;
+      transform: translateY(-50%) !important;
+      border: 0 !important;
+      border-radius: 7px !important;
+      background: transparent !important;
+      background-image: none !important;
+      color: #61768a !important;
+      box-shadow: none !important;
+      cursor: pointer !important;
+    }
+    .password-toggle:hover { background: #eaf5f3 !important; color: var(--auth-accent-dark) !important; }
+    .password-toggle svg {
+      display: block !important;
+      width: 19px !important;
+      min-width: 19px !important;
+      max-width: 19px !important;
+      height: 19px !important;
+      min-height: 19px !important;
+      max-height: 19px !important;
+      overflow: visible !important;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      fill: none;
+      pointer-events: none;
+    }
+    .password-toggle::before,
+    .password-toggle::after { content: none !important; display: none !important; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+    .auth-submit {
+      display: flex;
+      width: 100%;
+      min-height: 46px;
+      align-items: center;
+      justify-content: center;
+      margin-top: 5px;
+      padding: 12px 18px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--auth-accent);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .auth-submit:hover { background: var(--auth-accent-dark); }
+    .auth-submit:disabled { opacity: .65; cursor: wait; }
+    .auth-bottom { margin: 17px 0 0; color: var(--auth-muted); font-size: 12px; text-align: center; }
+    .auth-bottom a { color: var(--auth-accent-dark); font-weight: 700; }
+    .auth-footer { padding: 24px 0; border-top: 1px solid var(--auth-border); background: #fff; color: var(--auth-muted); font-size: 12px; text-align: center; }
+    .auth-footer p { margin: 0; }
+
+    @media (max-width: 800px) {
+      .auth-layout { grid-template-columns: 1fr; }
+      .auth-intro { padding: 27px; }
+      .auth-intro h2 { font-size: 26px; }
+      .auth-benefits { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 520px) {
+      .auth-header-inner { padding: 12px 0; align-items: flex-start; flex-direction: column; gap: 12px; }
+      .auth-nav { gap: 14px; }
+      .auth-nav a { font-size: 12px; }
+      .auth-main { margin-top: 23px; }
+      .auth-panel { padding: 20px; }
+      .auth-benefits { grid-template-columns: 1fr; }
+    }
+  </style>
+
+  <script src="js/login.js" defer></script>
+</head>
+<body>
+  <header class="auth-header">
+    <div class="auth-header-inner">
+      <a class="auth-brand" href="index.html" aria-label="SmartTransit หน้าหลัก">
+        <span class="auth-brand-mark" aria-hidden="true">↗</span>
+        <span>Smart<span class="auth-brand-highlight">Transit</span></span>
+      </a>
+
+      <nav class="auth-nav" aria-label="เมนูหลัก">
+        <a href="index.html">หน้าหลัก</a>
+        <a href="search.html">ค้นหาเที่ยวรถ</a>
+        <a href="history.html">ประวัติการจอง</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="auth-main">
+    <div class="auth-layout">
+      <aside class="auth-intro">
+        <div class="auth-intro-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4"></circle>
+            <path d="M4 21a8 8 0 0 1 16 0"></path>
+          </svg>
+        </div>
+
+        <p class="auth-eyebrow"><span class="auth-eyebrow-dot"></span> YOUR SMART JOURNEY</p>
+        <h2>เดินทางได้สะดวก<br>เริ่มต้นที่บัญชีของคุณ</h2>
+        <p class="auth-intro-description">
+          เข้าสู่ระบบเพื่อส่งรายการจองและตรวจสอบประวัติการเดินทางที่เชื่อมโยงกับบัญชีของคุณ
+        </p>
+
+        <div class="auth-benefits">
+          <div class="auth-benefit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+            จัดการรายการจองของคุณ
+          </div>
+          <div class="auth-benefit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+            ดูประวัติการจอง
+          </div>
+          <div class="auth-benefit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>
+            ยืนยันข้อมูลก่อนจอง
+          </div>
+        </div>
+      </aside>
+
+      <section class="auth-panel" aria-labelledby="authTitle">
+        <div class="auth-tabs" role="tablist" aria-label="เข้าสู่ระบบหรือสมัครสมาชิก">
+          <button class="auth-tab" type="button" id="loginTab" role="tab" aria-selected="true" aria-controls="loginPanel">เข้าสู่ระบบ</button>
+          <button class="auth-tab" type="button" id="registerTab" role="tab" aria-selected="false" aria-controls="registerPanel">สมัครสมาชิก</button>
+        </div>
+
+        <div id="authMessage" class="auth-message" role="status" aria-live="polite" hidden></div>
+
+        <!-- LOGIN -->
+        <section id="loginPanel" role="tabpanel" aria-labelledby="loginTab">
+          <h1 class="auth-panel-title" id="authTitle">ยินดีต้อนรับกลับ</h1>
+          <p class="auth-subtitle">กรอกอีเมลและรหัสผ่านเพื่อเข้าสู่ระบบ</p>
+
+          <form id="loginForm" autocomplete="on">
+            <div class="auth-field">
+              <label for="loginEmail">อีเมล</label>
+              <input type="email" id="loginEmail" name="email" autocomplete="username" placeholder="name@example.com" required maxlength="254">
+            </div>
+
+            <div class="auth-field">
+              <label for="loginPassword">รหัสผ่าน</label>
+              <div class="auth-password-wrap">
+                <input type="password" id="loginPassword" name="password" autocomplete="current-password" placeholder="กรอกรหัสผ่าน" required>
+                <button class="password-toggle" type="button" data-toggle-password="loginPassword" aria-label="แสดงรหัสผ่าน" aria-pressed="false">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </button>
+              </div>
+            </div>
+
+            <button class="auth-submit" type="submit" id="loginSubmit">เข้าสู่ระบบ</button>
+          </form>
+
+          <p class="auth-bottom">ยังไม่มีบัญชี? <a href="#register" id="showRegisterLink">สมัครสมาชิก</a></p>
+        </section>
+
+        <!-- REGISTER -->
+        <section id="registerPanel" role="tabpanel" aria-labelledby="registerTab" hidden>
+          <h1 class="auth-panel-title">สร้างบัญชีใหม่</h1>
+          <p class="auth-subtitle">กรอกข้อมูลด้านล่างเพื่อสมัครสมาชิก SmartTransit</p>
+
+          <form id="registerForm" autocomplete="on">
+            <div class="auth-field">
+              <label for="registerFullName">ชื่อ-นามสกุล</label>
+              <input type="text" id="registerFullName" name="fullName" autocomplete="name" placeholder="กรอกชื่อ-นามสกุล" required maxlength="150">
+            </div>
+
+            <div class="auth-field">
+              <label for="registerEmail">อีเมล</label>
+              <input type="email" id="registerEmail" name="email" autocomplete="email" placeholder="name@example.com" required maxlength="254">
+            </div>
+
+            <div class="auth-field">
+              <label for="registerPassword">รหัสผ่าน</label>
+              <div class="auth-password-wrap">
+                <input type="password" id="registerPassword" name="password" autocomplete="new-password" placeholder="สร้างรหัสผ่านอย่างน้อย 8 ตัว" required minlength="8">
+                <button class="password-toggle" type="button" data-toggle-password="registerPassword" aria-label="แสดงรหัสผ่าน" aria-pressed="false">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="auth-field">
+              <label for="confirmPassword">ยืนยันรหัสผ่าน</label>
+              <div class="auth-password-wrap">
+                <input type="password" id="confirmPassword" name="confirmPassword" autocomplete="new-password" placeholder="กรอกรหัสผ่านอีกครั้ง" required minlength="8">
+                <button class="password-toggle" type="button" data-toggle-password="confirmPassword" aria-label="แสดงรหัสผ่าน" aria-pressed="false">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </button>
+              </div>
+              <p class="auth-subtitle" id="passwordMatchHint" style="margin:7px 0 0;" aria-live="polite">กรอกรหัสผ่านให้ตรงกันทั้งสองช่อง</p>
+            </div>
+
+            <button class="auth-submit" type="submit" id="registerSubmit">สมัครสมาชิก</button>
+          </form>
+
+          <p class="auth-bottom">มีบัญชีอยู่แล้ว? <a href="#login" id="showLoginLink">เข้าสู่ระบบ</a></p>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <footer class="auth-footer">
+    <p>© SmartTransit — ระบบจองตั๋วรถโดยสารออนไลน์</p>
+  </footer>
+</body>
+</html>

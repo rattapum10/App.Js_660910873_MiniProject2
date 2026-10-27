@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartTransit | เดินทางง่าย จองได้ในที่เดียว</title>
+  <meta name="description" content="SmartTransit ช่วยให้คุณค้นหาเที่ยวรถ วางแผนการเดินทาง และจัดการการจองได้ในที่เดียว">
+  <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    :root {
+      --home-primary: #123b52;
+      --home-accent: #12aa9f;
+      --home-accent-dark: #0d8f86;
+      --home-background: #f3f7fa;
+      --home-text: #203449;
+      --home-muted: #718297;
+      --home-border: #e1e9f0;
+      --home-white: #ffffff;
+    }
+
+    [hidden] { display: none !important; }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--home-text);
+      background: var(--home-background);
+      font-family: Arial, Tahoma, sans-serif;
+      line-height: 1.65;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, a:focus-visible {
+      outline: 3px solid #50d9cc;
+      outline-offset: 4px;
+    }
+
+    .home-container {
+      width: min(1120px, 90%);
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .home-header {
+      position: relative;
+      z-index: 10;
+      background: var(--home-primary);
+      color: var(--home-white);
+    }
+
+    .home-navbar {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .home-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      color: #fff;
+      font-size: 25px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+    }
+
+    .home-brand-mark {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-radius: 11px;
+      background: var(--home-accent);
+      color: #fff;
+      font-size: 21px;
+    }
+
+    .home-brand-name span { color: #4fe0d0; }
+
+    .home-nav {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .home-nav a {
+      color: #e4edf4;
+      font-size: 13px;
+      transition: color 0.2s;
+    }
+
+    .home-nav a:hover { color: #59e0d0; }
+
+    .home-nav .home-nav-cta {
+      padding: 10px 16px;
+      border-radius: 8px;
+      background: var(--home-accent);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .home-nav .home-nav-cta:hover {
+      background: var(--home-accent-dark);
+      color: #fff;
+    }
+
+    /* Hero */
+    .home-hero {
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 85% 25%, rgba(18, 170, 159, 0.17), transparent 32%),
+        linear-gradient(120deg, #e2f7f3 0%, #e8f2fb 54%, #eff3fc 100%);
+    }
+
+    .home-hero-inner {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 42px;
+      min-height: 480px;
+      padding-top: 48px;
+      padding-bottom: 48px;
+    }
+
+    .home-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 18px;
+      color: #087e78;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .home-eyebrow-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--home-accent);
+    }
+
+    .home-hero h1 {
+      max-width: 600px;
+      margin: 0;
+      color: var(--home-primary);
+      font-size: clamp(36px, 4.6vw, 58px);
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: -1.5px;
+    }
+
+    .home-hero h1 span { color: var(--home-accent-dark); }
+
+    .home-hero-description {
+      max-width: 500px;
+      margin: 21px 0 0;
+      color: #5e7287;
+      font-size: 15px;
+      line-height: 1.9;
+    }
+
+    .home-hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 13px;
+      margin-top: 27px;
+    }
+
+    .home-button {
+      display: inline-flex;
+      min-height: 48px;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 12px 20px;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 700;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    }
+
+    .home-button:hover { transform: translateY(-2px); }
+
+    .home-button-primary {
+      background: var(--home-accent);
+      color: #fff;
+      box-shadow: 0 6px 15px rgba(18, 170, 159, 0.18);
+    }
+
+    .home-button-primary:hover { background: var(--home-accent-dark); }
+
+    .home-button-secondary {
+      border-color: #cbdce4;
+      background: rgba(255, 255, 255, 0.65);
+      color: var(--home-primary);
+    }
+
+    .home-button-secondary:hover {
+      background: #fff;
+      border-color: #a9c8d2;
+    }
+
+    .home-hero-note {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      margin-top: 21px;
+      color: #647b8c;
+      font-size: 13px;
+    }
+
+    .home-note-check {
+      display: grid;
+      width: 21px;
+      height: 21px;
+      flex-shrink: 0;
+      place-items: center;
+      border-radius: 50%;
+      background: #d5f3e9;
+      color: #087e62;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    /* Generated travel illustration */
+    .home-visual {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .home-hero-image {
+      display: block;
+      width: 100%;
+      max-width: 600px;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      object-fit: contain;
+      border-radius: 16px;
+      box-shadow: 0 18px 48px rgba(18, 59, 82, 0.12);
+    }
+
+    /* Shared section layouts */
+    .home-section { padding: 72px 0; }
+    .home-features { background: #fff; }
+
+    .home-section-heading {
+      max-width: 650px;
+      margin: 0 auto 38px;
+      text-align: center;
+    }
+
+    .home-section-kicker {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--home-accent-dark);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.7px;
+    }
+
+    .home-section-heading h2 {
+      margin: 0;
+      color: var(--home-primary);
+      font-size: clamp(27px, 3vw, 36px);
+      line-height: 1.4;
+    }
+
+    .home-section-heading p {
+      margin: 14px 0 0;
+      color: var(--home-muted);
+      font-size: 15px;
+    }
+
+    .home-feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px;
+    }
+
+    .home-feature-card {
+      padding: 25px;
+      border: 1px solid var(--home-border);
+      border-radius: 13px;
+      background: #fff;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .home-feature-card:hover {
+      transform: translateY(-4px);
+      border-color: #c4e6e1;
+      box-shadow: 0 13px 30px rgba(22, 65, 85, 0.07);
+    }
+
+    .home-feature-icon {
+      display: grid;
+      width: 49px;
+      height: 49px;
+      place-items: center;
+      margin-bottom: 18px;
+      border-radius: 12px;
+      background: #e6f7f4;
+      color: #087e78;
+      font-size: 23px;
+    }
+
+    .home-feature-card h3 {
+      margin: 0 0 9px;
+      color: var(--home-primary);
+      font-size: 18px;
+    }
+
+    .home-feature-card p {
+      margin: 0;
+      color: var(--home-muted);
+      font-size: 14px;
+      line-height: 1.9;
+    }
+
+    .home-steps { background: var(--home-background); }
+
+    .home-step-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 30px;
+    }
+
+    .home-step {
+      padding: 24px 20px;
+      text-align: center;
+    }
+
+    .home-step-number {
+      display: grid;
+      width: 52px;
+      height: 52px;
+      place-items: center;
+      margin: 0 auto 17px;
+      border: 1px solid #bde6df;
+      border-radius: 50%;
+      background: #fff;
+      color: #087e78;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .home-step h3 {
+      margin: 0 0 9px;
+      color: var(--home-primary);
+      font-size: 17px;
+    }
+
+    .home-step p {
+      margin: 0;
+      color: var(--home-muted);
+      font-size: 14px;
+      line-height: 1.9;
+    }
+
+    .home-cta-section {
+      padding: 0 0 75px;
+      background: var(--home-background);
+    }
+
+    .home-cta-card {
+      position: relative;
+      overflow: hidden;
+      padding: 42px 45px;
+      border-radius: 18px;
+      background: linear-gradient(110deg, #123b52, #1a5969);
+      color: #fff;
+    }
+
+    .home-cta-card::after {
+      position: absolute;
+      top: -100px;
+      right: -65px;
+      width: 300px;
+      height: 300px;
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      border-radius: 50%;
+      content: "";
+      box-shadow: 0 0 0 28px rgba(255, 255, 255, 0.035),
+                  0 0 0 58px rgba(255, 255, 255, 0.025);
+      pointer-events: none;
+    }
+
+    .home-cta-content {
+      position: relative;
+      z-index: 1;
+      max-width: 700px;
+    }
+
+    .home-cta-card h2 {
+      margin: 0;
+      font-size: clamp(25px, 3vw, 34px);
+      line-height: 1.4;
+    }
+
+    .home-cta-card p {
+      margin: 12px 0 23px;
+      color: #d7e8ed;
+      font-size: 15px;
+    }
+
+    .home-cta-card .home-button {
+      background: var(--home-accent);
+      color: #fff;
+    }
+
+    .home-cta-card .home-button:hover { background: var(--home-accent-dark); }
+
+    /* Footer */
+    .home-footer {
+      padding: 27px 0;
+      border-top: 1px solid var(--home-border);
+      background: #fff;
+    }
+
+    .home-footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .home-footer-brand {
+      color: var(--home-primary);
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .home-footer-brand span { color: var(--home-accent-dark); }
+    .home-footer-copy { margin: 0; color: var(--home-muted); font-size: 12px; }
+
+    .home-footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+
+    .home-footer-links a { color: var(--home-muted); font-size: 13px; }
+    .home-footer-links a:hover { color: var(--home-accent-dark); }
+
+    @media (max-width: 900px) {
+      .home-hero-inner {
+        grid-template-columns: 1fr;
+        gap: 32px;
+        padding-top: 46px;
+        padding-bottom: 42px;
+      }
+
+      .home-hero-copy { max-width: 680px; }
+      .home-visual { width: 100%; }
+      .home-hero-image { max-width: 700px; }
+      .home-feature-grid, .home-step-grid { gap: 14px; }
+      .home-feature-card { padding: 19px; }
+    }
+
+    @media (max-width: 600px) {
+      .home-navbar {
+        min-height: 65px;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding-top: 12px;
+        padding-bottom: 12px;
+      }
+
+      .home-brand { font-size: 22px; }
+      .home-brand-mark { width: 34px; height: 34px; }
+      .home-nav { width: 100%; justify-content: space-between; gap: 9px; flex-wrap: wrap; }
+      .home-nav a { font-size: 12px; }
+      .home-nav .home-nav-cta { padding: 8px 10px; }
+      .home-hero-inner { padding-top: 38px; padding-bottom: 35px; }
+      .home-hero h1 { font-size: 39px; }
+      .home-hero-description { font-size: 14px; }
+      .home-hero-actions { align-items: stretch; }
+      .home-hero-actions .home-button { width: 100%; }
+      .home-hero-image { border-radius: 12px; }
+      .home-section { padding: 52px 0; }
+      .home-feature-grid, .home-step-grid { grid-template-columns: 1fr; }
+      .home-feature-card { padding: 22px; }
+      .home-step { padding: 15px; }
+      .home-cta-section { padding-bottom: 50px; }
+      .home-cta-card { padding: 28px 23px; }
+      .home-footer-inner { align-items: flex-start; flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="home-header">
+    <div class="home-container home-navbar">
+      <a class="home-brand" href="index.html" aria-label="SmartTransit หน้าหลัก">
+        <span class="home-brand-mark" aria-hidden="true">↗</span>
+        <span class="home-brand-name">Smart<span>Transit</span></span>
+      </a>
+
+      <nav class="home-nav" aria-label="เมนูหลัก">
+        <a href="index.html" aria-current="page">หน้าหลัก</a>
+        <a href="search.html">ค้นหาเที่ยวรถ</a>
+        <a href="history.html">ประวัติการจอง</a>
+        <a href="login.html">เข้าสู่ระบบ</a>
+        <a class="home-nav-cta" href="search.html">เริ่มค้นหา</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="home-hero">
+      <div class="home-container home-hero-inner">
+        <div class="home-hero-copy">
+          <p class="home-eyebrow">
+            <span class="home-eyebrow-dot"></span>
+            SmartTransit Booking System
+          </p>
+
+          <h1>เดินทางง่าย<br><span>จองได้ในที่เดียว</span></h1>
+
+          <p class="home-hero-description">
+            วางแผนการเดินทางของคุณได้สะดวกยิ่งขึ้น
+            ค้นหาเที่ยวรถ ตรวจสอบรายละเอียด
+            และจัดการการจองผ่าน SmartTransit
+          </p>
+
+          <div class="home-hero-actions">
+            <a class="home-button home-button-primary" href="search.html">
+              เริ่มค้นหาเที่ยวรถ <span aria-hidden="true">→</span>
+            </a>
+            <a class="home-button home-button-secondary" href="history.html">
+              ดูประวัติการจอง
+            </a>
+          </div>
+
+          <div class="home-hero-note">
+            <span class="home-note-check" aria-hidden="true">✓</span>
+            <span>ค้นหา เลือกเที่ยวรถ และส่งข้อมูลการจองได้ในระบบเดียว</span>
+          </div>
+        </div>
+
+        <!-- ภาพประกอบรถโดยสาร: วางไฟล์ไว้ที่ frontend/images/smarttransit-hero.png -->
+        <div class="home-visual">
+          <img
+            src="images/smarttransit-hero.png"
+            alt="ภาพประกอบรถโดยสารบนเส้นทางเชื่อมต่อจุดหมายต่าง ๆ"
+            class="home-hero-image"
+            width="1650"
+            height="870"
+            fetchpriority="high"
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="home-section home-features">
+      <div class="home-container">
+        <div class="home-section-heading">
+          <span class="home-section-kicker">WHY SMARTTRANSIT</span>
+          <h2>ทุกขั้นตอนการเดินทาง<br>จัดการได้ง่ายขึ้น</h2>
+          <p>เริ่มจากการค้นหาเที่ยวรถ ไปจนถึงตรวจสอบประวัติการจอง ได้ผ่านเมนูที่เข้าใจง่าย</p>
+        </div>
+
+        <div class="home-feature-grid">
+          <article class="home-feature-card">
+            <div class="home-feature-icon" aria-hidden="true">⌕</div>
+            <h3>ค้นหาเที่ยวรถง่าย ๆ</h3>
+            <p>เลือกต้นทาง ปลายทาง วันที่เดินทาง และจำนวนผู้โดยสารจากหน้าค้นหาโดยเฉพาะ</p>
+          </article>
+
+          <article class="home-feature-card">
+            <div class="home-feature-icon" aria-hidden="true">🎫</div>
+            <h3>จองผ่านขั้นตอนที่ชัดเจน</h3>
+            <p>ตรวจสอบรายละเอียดเที่ยวรถและกรอกข้อมูลผู้จองก่อนยืนยันรายการ</p>
+          </article>
+
+          <article class="home-feature-card">
+            <div class="home-feature-icon" aria-hidden="true">▤</div>
+            <h3>ตรวจสอบประวัติการจอง</h3>
+            <p>เข้าดูรายการจองของคุณผ่านเมนูประวัติการจองหลังเข้าสู่ระบบ</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="home-section home-steps">
+      <div class="home-container">
+        <div class="home-section-heading">
+          <span class="home-section-kicker">HOW IT WORKS</span>
+          <h2>เริ่มต้นเดินทางใน 3 ขั้นตอน</h2>
+          <p>ใช้งานง่าย ตั้งแต่เลือกเส้นทางจนถึงยืนยันการจอง</p>
+        </div>
+
+        <div class="home-step-grid">
+          <article class="home-step">
+            <div class="home-step-number">01</div>
+            <h3>ค้นหาเที่ยวรถ</h3>
+            <p>เลือกต้นทาง ปลายทาง วันที่เดินทาง และจำนวนผู้โดยสาร</p>
+          </article>
+
+          <article class="home-step">
+            <div class="home-step-number">02</div>
+            <h3>เลือกเที่ยวที่ต้องการ</h3>
+            <p>ตรวจสอบรหัสเที่ยวรถ เวลาเดินทาง และรายละเอียดก่อนจอง</p>
+          </article>
+
+          <article class="home-step">
+            <div class="home-step-number">03</div>
+            <h3>กรอกข้อมูลและยืนยัน</h3>
+            <p>กรอกข้อมูลผู้จอง ส่งรายการ และตรวจสอบผลการจอง</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Call to action -->
+    <section class="home-cta-section">
+      <div class="home-container">
+        <div class="home-cta-card">
+          <div class="home-cta-content">
+            <h2>พร้อมวางแผนการเดินทางแล้วหรือยัง?</h2>
+            <p>ไปยังหน้าค้นหาเที่ยวรถเพื่อเริ่มเลือกเส้นทางและดูเที่ยวรถที่ระบบแสดง</p>
+            <a class="home-button" href="search.html">
+              ค้นหาเที่ยวรถเลย <span aria-hidden="true">→</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="home-footer">
+    <div class="home-container home-footer-inner">
+      <a class="home-footer-brand" href="index.html">Smart<span>Transit</span></a>
+      <p class="home-footer-copy">© SmartTransit — ระบบจองตั๋วรถโดยสารออนไลน์</p>
+      <nav class="home-footer-links" aria-label="ลิงก์ท้ายหน้า">
+        <a href="search.html">ค้นหาเที่ยวรถ</a>
+        <a href="history.html">ประวัติการจอง</a>
+        <a href="login.html">เข้าสู่ระบบ</a>
+      </nav>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,316 @@
+/* ===== 1. พื้นฐานเว็บไซต์ ===== */
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --navy: #12314b;
+    --teal: #13a89e;
+    --teal-dark: #0c8982;
+    --background: #f4f8fb;
+    --text: #203e55;
+    --muted: #738696;
+    --border: #dce6ed;
+    --white: #ffffff;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    background: var(--background);
+    color: var(--text);
+    line-height: 1.6;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+button,
+input,
+select {
+    font: inherit;
+}
+
+/* ===== 2. แถบเมนู ===== */
+.navbar {
+    min-height: 76px;
+    padding: 16px 7%;
+    background: var(--navy);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.logo {
+    font-size: 26px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.logo span {
+    color: #35d0bd;
+}
+
+.navbar nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+
+.navbar nav a {
+    font-size: 14px;
+    color: #e1edf4;
+    transition: color 0.2s;
+}
+
+.navbar nav a:hover {
+    color: #35d0bd;
+}
+
+/* ===== 3. ส่วนต้อนรับ ===== */
+.hero {
+    padding: 75px 20px 85px;
+    text-align: center;
+    background: linear-gradient(135deg, #e1f7f3, #e9f0fb);
+}
+
+.hero-content {
+    max-width: 800px;
+    margin: auto;
+}
+
+.eyebrow {
+    color: var(--teal-dark);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.hero h1 {
+    color: var(--navy);
+    font-size: clamp(32px, 5vw, 52px);
+    line-height: 1.3;
+    margin: 16px 0;
+}
+
+.hero-description {
+    color: var(--muted);
+    margin: 0 auto 28px;
+    max-width: 550px;
+}
+
+/* ===== 4. ปุ่ม ===== */
+.primary-button {
+    display: inline-block;
+    background: var(--teal);
+    color: var(--white);
+    border: none;
+    border-radius: 9px;
+    padding: 13px 24px;
+    font-weight: 700;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.primary-button:hover {
+    background: var(--teal-dark);
+    transform: translateY(-1px);
+}
+
+.primary-button:focus-visible {
+    outline: 3px solid #78d9d1;
+    outline-offset: 3px;
+}
+
+/* ===== 5. ส่วนค้นหาและผลลัพธ์ ===== */
+.search-section,
+.results-section {
+    width: min(100% - 32px, 950px);
+    margin: 42px auto;
+}
+
+.section-heading {
+    margin-bottom: 22px;
+}
+
+.section-heading h2 {
+    color: var(--navy);
+    font-size: 27px;
+    margin: 4px 0;
+}
+
+.section-heading > p:last-child {
+    color: var(--muted);
+    margin-top: 5px;
+}
+
+.search-card {
+    padding: 30px;
+    background: var(--white);
+    border: 1px solid #edf1f5;
+    border-radius: 18px;
+    box-shadow: 0 10px 35px #173e5b0a;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.form-group {
+    min-width: 0;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.form-group select,
+.form-group input {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: white;
+    color: var(--text);
+}
+
+.form-group select:focus,
+.form-group input:focus {
+    outline: 2px solid #7bd6cf;
+    border-color: var(--teal);
+}
+
+.search-button {
+    width: 100%;
+    margin-top: 24px;
+}
+
+.message {
+    margin-bottom: 0;
+    color: #bd3c3c;
+    font-size: 14px;
+}
+
+/* ===== 6. การ์ดเที่ยวรถ ===== */
+.trip-list {
+    display: grid;
+    gap: 16px;
+}
+
+.empty-state {
+    padding: 35px 20px;
+    text-align: center;
+    background: white;
+    border-radius: 14px;
+    color: var(--muted);
+}
+
+.empty-state p:first-child {
+    font-size: 36px;
+    margin: 0;
+}
+
+.trip-card {
+    padding: 24px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 5px 20px #173e5b08;
+}
+
+.trip-info h3 {
+    margin: 0 0 8px;
+    color: var(--navy);
+}
+
+.trip-info p {
+    margin: 5px 0;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.trip-action {
+    min-width: 130px;
+    text-align: right;
+}
+
+.trip-price {
+    color: var(--teal-dark);
+    font-size: 25px;
+    font-weight: 800;
+}
+
+.trip-action button {
+    margin-top: 10px;
+}
+
+/* ===== 7. ส่วนท้าย ===== */
+.footer {
+    margin-top: 70px;
+    padding: 30px 20px;
+    text-align: center;
+    background: var(--navy);
+    color: #d8e5ee;
+}
+
+.footer h3 {
+    margin: 0;
+    color: white;
+}
+
+.footer p {
+    margin: 5px 0;
+    font-size: 13px;
+}
+
+/* ===== 8. รองรับมือถือ ===== */
+@media (max-width: 650px) {
+    .navbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .navbar nav {
+        gap: 12px 18px;
+    }
+
+    .hero {
+        padding: 55px 18px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .search-card {
+        padding: 20px;
+    }
+
+    .trip-card {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .trip-action {
+        text-align: left;
+    }
+}

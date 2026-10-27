@@ -1,0 +1,275 @@
+
+.history-page {
+  min-height: 70vh;
+  padding-top: 40px;
+  padding-bottom: 56px;
+}
+
+.history-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.history-eyebrow {
+  margin: 0 0 8px;
+  color: #2563eb;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.history-heading h1 {
+  margin: 0 0 10px;
+  color: #172554;
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+}
+
+.history-description {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.7;
+}
+
+.history-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.history-button {
+  padding: 10px 15px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #fff;
+  color: #1e293b;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.history-button:hover {
+  background: #f1f5f9;
+}
+
+.history-button--danger {
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.history-button--danger:hover {
+  background: #fef2f2;
+}
+
+.history-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.history-status {
+  min-height: 24px;
+  margin: 14px 0;
+  color: #475569;
+  font-size: 0.95rem;
+}
+
+.history-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+.history-card {
+  padding: 22px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 5px 18px rgb(15 23 42 / 5%);
+}
+
+.history-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.history-booking-id {
+  margin: 0 0 6px;
+  color: #64748b;
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.history-route {
+  margin: 0;
+  color: #172554;
+  font-size: 1.2rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.history-status-badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.history-details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 20px 0;
+}
+
+.history-detail {
+  min-width: 0;
+}
+
+.history-detail__label {
+  display: block;
+  margin-bottom: 6px;
+  color: #64748b;
+  font-size: 0.86rem;
+}
+
+.history-detail__value {
+  display: block;
+  color: #1e293b;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.history-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.history-total-label {
+  color: #475569;
+  font-weight: 600;
+}
+
+.history-total-value {
+  color: #1d4ed8;
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.history-customer,
+.history-notes {
+  margin: 14px 0 0;
+  color: #475569;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.history-notes {
+  color: #64748b;
+}
+
+.history-delete-one {
+  margin-top: 16px;
+  padding: 8px 12px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fff;
+  color: #b91c1c;
+  font: inherit;
+  cursor: pointer;
+}
+
+.history-delete-one:hover {
+  background: #fef2f2;
+}
+
+.history-empty {
+  padding: 48px 20px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 16px;
+  background: #f8fafc;
+  text-align: center;
+}
+
+.history-empty-icon {
+  color: #64748b;
+  font-size: 2.4rem;
+}
+
+.history-empty h2 {
+  margin: 12px 0;
+  color: #172554;
+}
+
+.history-empty p {
+  color: #64748b;
+  line-height: 1.7;
+}
+
+.history-link {
+  display: inline-block;
+  margin-top: 8px;
+  color: #2563eb;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.history-link:hover {
+  text-decoration: underline;
+}
+
+.history-notice {
+  margin-top: 28px;
+  padding: 14px 16px;
+  border-left: 4px solid #94a3b8;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+@media (max-width: 760px) {
+  .history-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .history-details {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .history-card {
+    padding: 17px;
+  }
+}
+
+@media (max-width: 420px) {
+  .history-details {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .history-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .history-button {
+    width: 100%;
+  }
+}
