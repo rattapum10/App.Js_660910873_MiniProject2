@@ -9,7 +9,9 @@
 const path = require("node:path");
 const { DatabaseSync } = require("node:sqlite");
 
-const dbPath = path.join(__dirname, "smarttransit.db");
+const dbPath = process.env.DATABASE_PATH
+  ? path.resolve(process.env.DATABASE_PATH)
+  : path.join(__dirname, "smarttransit.db");
 const db = new DatabaseSync(dbPath);
 
 db.exec("PRAGMA foreign_keys = ON;");

@@ -55,8 +55,11 @@ app.use(
         const isLocalTunnel =
           url.protocol === "https:" &&
           /^[a-z0-9-]+\.loca\.lt$/i.test(url.hostname);
-
-        if (isLocalhost || isLocalTunnel) {
+        const isRenderOrigin =
+          url.protocol === "https:" &&
+          process.env.RENDER_EXTERNAL_URL &&
+          url.origin === process.env.RENDER_EXTERNAL_URL;  
+        if (isLocalhost || isLocalTunnel || isRenderOrigin) {
           return callback(null, true);
         }
       } catch {
