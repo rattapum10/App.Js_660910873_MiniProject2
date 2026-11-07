@@ -1,11 +1,11 @@
-"use strict";
+﻿"use strict";
 
 /*
  * SmartTransit Login / Register
  * Use a same-origin API path so local, LAN, and LocalTunnel URLs work.
  */
 
-const API_BASE = "http://127.0.0.1:3000/api/auth";
+const API_BASE = "/api/auth";
 
 const $ = (id) => document.getElementById(id);
 

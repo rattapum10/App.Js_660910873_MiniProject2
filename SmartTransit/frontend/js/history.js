@@ -1,7 +1,7 @@
-"use strict";
+﻿"use strict";
 
 /* SmartTransit History: load and delete bookings owned by current user. */
-const API_BASE = "http://127.0.0.1:3000/api";
+const API_BASE = "/api";
 const $ = (id) => document.getElementById(id);
 
 let currentBookings = [];
