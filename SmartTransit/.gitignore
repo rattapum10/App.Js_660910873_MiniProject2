@@ -1,16 +1,28 @@
-﻿.env
+﻿# Environment and secrets
+.env
 .env.*
 !.env.example
+token.txt
 
-**/node_modules/
-**/.DS_Store
+# Database files
+*.db
+*.sqlite
+*.sqlite3
 
-# Local SQLite databases and backups
-database/*.db
-database/*.db-*
-**/*.sqlite
-**/*.sqlite3
+# Backups and temporary files
+*.bak
+*.backup
+*.before-demo-backup
+backend/archive/
 
-# Logs
-npm-debug.log*
-*.log
+# Archives
+*.zip
+
+# Dependencies
+node_modules/
+
+# Temporary HTML backups
+*.backup.html
+
+# ZIP archives
+*.zip

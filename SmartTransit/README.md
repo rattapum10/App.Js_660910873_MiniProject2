@@ -1,105 +1,125 @@
-\# SmartTransit
+# SmartTransit
+
+ระบบต้นแบบสำหรับค้นหาเที่ยวรถและจัดการการจองเดินทาง พัฒนาด้วย Frontend, Node.js, Express และ SQLite
 
+## 1. ความสามารถของระบบ
 
+- สมัครสมาชิกและเข้าสู่ระบบ
+- ตรวจสอบข้อมูลบัญชีผู้ใช้
+- ค้นหาเที่ยวรถ
+- เลือกเที่ยวรถและกรอกข้อมูลการจอง
+- บันทึกข้อมูลการจอง
+- ดูประวัติการจอง
+- แยกข้อมูลการจองตามบัญชีผู้ใช้
+- ลบรายการจอง
+
+## 2. โครงสร้างโปรเจกต์
 
-SmartTransit is a web-based transportation booking application.
+```text
+SmartTransit/
+├── backend/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── routes/
+│   └── server.js
+├── database/
+│   └── db.js
+├── frontend/
+│   ├── login.html
+│   ├── search.html
+│   ├── booking.html
+│   ├── history.html
+│   ├── css/
+│   └── js/
+├── .env
+└── README.md
+```
 
+หมายเหตุ: โครงสร้างข้างต้นแสดงไฟล์และโฟลเดอร์หลักบางส่วน ไม่ใช่รายการไฟล์ทั้งหมด
 
+## 3. เครื่องมือที่ใช้พัฒนา
 
-\## Features
+- HTML, CSS และ JavaScript
+- Node.js
+- Express.js
+- SQLite
+- Visual Studio Code
+- Live Server Extension
 
+## 4. การติดตั้งและเตรียมระบบ
 
+1. ติดตั้ง Node.js และ Visual Studio Code
+2. เปิดโฟลเดอร์ `SmartTransit` ด้วย Visual Studio Code
+3. เปิด Terminal ใน Visual Studio Code
+4. ตรวจสอบว่ามีไฟล์ `.env` ตามตำแหน่งที่ Backend กำหนด
+5. กำหนดค่า `JWT_SECRET` สำหรับระบบ Token และกำหนด Port ให้ตรงกับการตั้งค่าของ Backend
 
-\- User registration and login
+**สำคัญ:** ห้ามเผยแพร่ค่า Secret รหัสผ่าน หรือ Token ลง GitHub
 
-\- JWT-based authentication
+## 5. วิธีเปิดใช้งาน Backend
 
-\- Browse available trips
+เปิด PowerShell ที่โฟลเดอร์หลักของโปรเจกต์ แล้วรันคำสั่ง:
 
-\- Create and view bookings
+```powershell
+npm --prefix .\backend start
+```
 
-\- Cancel bookings
+เมื่อเริ่มทำงานสำเร็จ ระบบจะแสดงข้อมูล Backend พร้อม URL สำหรับเรียกใช้งาน
 
-\- SQLite database for users, trips, and bookings
+URL ของ Backend:
 
+```text
+http://127.0.0.1:3000
+```
 
+ตรวจสอบสถานะ Backend ด้วยคำสั่ง:
 
-\## Requirements
+```powershell
+Invoke-RestMethod http://127.0.0.1:3000/api/health
+```
 
+ระบบควรตอบกลับโดยมีค่า `success: True` และ `status: running`
 
+## 6. วิธีเปิดใช้งาน Frontend
 
-\- Node.js 22.13 or later with built-in `node:sqlite` support
+1. เปิดโฟลเดอร์ `frontend` ใน Visual Studio Code
+2. คลิกขวาที่ไฟล์ `login.html`
+3. เลือก **Open with Live Server**
+4. เข้าสู่ระบบด้วยบัญชีที่ลงทะเบียนไว้
+5. ทดลองใช้งานเมนูค้นหาเที่ยวรถและการจอง
 
-\- npm
+หมายเหตุ: ต้องเปิด Backend ค้างไว้ขณะใช้งาน Frontend
 
+## 7. ลำดับการใช้งานระบบ
 
+1. สมัครสมาชิก
+2. เข้าสู่ระบบ
+3. ค้นหาเที่ยวรถ
+4. เลือกเที่ยวรถที่ต้องการ
+5. กรอกข้อมูลการจอง
+6. ยืนยันการจอง
+7. ตรวจสอบประวัติการจอง
+8. ทดลองลบรายการจอง
 
-\## Local setup
+## 8. ผลการทดสอบ
 
+จากการทดสอบระบบบนเครื่องผู้พัฒนา ฟังก์ชันต่อไปนี้ทำงานได้:
 
+- Backend API และฐานข้อมูล
+- Login และ Profile
+- ค้นหาเที่ยวรถ
+- เลือกเที่ยวรถ
+- บันทึกการจอง
+- ดูประวัติการจอง
+- แยกข้อมูลตามบัญชีผู้ใช้
+- ลบรายการจอง
 
-1\. Open a terminal in the `SmartTransit` directory.
+## 9. ข้อจำกัดของระบบ
 
-2\. Install backend dependencies:
+SmartTransit เป็นโปรเจกต์ต้นแบบที่ทดสอบการทำงานบนเครื่องผู้พัฒนา การให้บริการจริงยังต้องตรวจสอบเพิ่มเติม เช่น ระบบชำระเงิน การเชื่อมต่อข้อมูลเที่ยวรถจริง การรักษาความปลอดภัย และการนำระบบขึ้นเซิร์ฟเวอร์
 
+## 10. ผู้พัฒนา
 
+โครงงาน SmartTransit
 
-&#x20;  ```powershell
-
-&#x20;  cd backend
-
-&#x20;  npm install
-
-&#x20;  ```
-
-
-
-3\. Create a `.env` file in the `SmartTransit` directory. Configure the required `JWT\_SECRET` with a securely generated random secret of at least 64 characters.
-
-4\. Start the application:
-
-
-
-&#x20;  ```powershell
-
-&#x20;  npm start
-
-&#x20;  ```
-
-
-
-5\. Open `http://localhost:3000` in your browser.
-
-
-
-\## Database
-
-
-
-The application uses SQLite. The database is initialized by `database/db.js`, which creates the required tables and inserts default trips when they are missing.
-
-
-
-\*\*Important:\*\* Back up the database before making changes. Do not commit `.env` files, database files, or credentials to version control.
-
-
-
-\## Deployment notes
-
-
-
-The current application uses SQLite and stores data on the server's filesystem. Before deploying to a hosting provider with an ephemeral filesystem, migrate to a persistent database or verify that durable storage is available. Otherwise, bookings and account data may be lost when the service restarts or is redeployed.
-
-
-
-\## Security
-
-
-
-\- Keep `JWT\_SECRET` private.
-
-\- Use HTTPS in production.
-
-\- Configure allowed CORS origins for the production domain.
-
-\- Use persistent storage and regular backups for production data.
+พัฒนาเพื่อการศึกษาและทดลองใช้งานระบบค้นหาเที่ยวรถและจัดการการจอง

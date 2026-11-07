@@ -6,7 +6,7 @@
    Success screen remains until user navigates.
    ========================================= */
 
-const API_BASE = "/api";
+const API_BASE = "http://127.0.0.1:3000/api";
 
 /* Prices are for display only. Backend should calculate authoritative total. */
 const TRIP_PRICES = {
