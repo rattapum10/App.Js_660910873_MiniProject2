@@ -23,9 +23,10 @@
     .history-total { color:var(--st-accent-dark,#0d8f86); font-size:19px; font-weight:800; }
     .history-status { display:inline-flex; align-items:center; gap:7px; padding:5px 9px; border-radius:7px; background:#e2f7e9; color:var(--st-success,#168344); font-size:12px; font-weight:800; white-space:nowrap; }
     .history-status-dot { width:7px; height:7px; border-radius:50%; background:currentColor; }
+    .history-status.is-cancelled { background:#eef1f4; color:#667085; }
     .history-card-actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; margin-top:18px; padding-top:15px; border-top:1px solid var(--st-border,#e1e9f0); }
 
-    /* ปุ่มลบประวัติการจอง */
+    /* ปุ่มยกเลิกการจอง */
     .history-delete-button {
       display: inline-flex;
       align-items: center;
@@ -73,7 +74,8 @@
     }
   </style>
 
-  <script src="js/history.js?v=2" defer></script>
+  <script src="js/auth.js" defer></script>
+<script src="js/history.js?v=3" defer></script>
 </head>
 <body>
   <header class="st-header">

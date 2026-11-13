@@ -1,4 +1,4 @@
-﻿
+
 "use strict";
 
 const API_BASE = "/api";
@@ -227,8 +227,14 @@ async function loadTrips() {
 
     try {
         const params = new URLSearchParams({
-            date: dateInput.value
+            date: dateInput.value,
+            origin: originSelect.value,
+            passengers: passengersSelect.value
         });
+
+        if (destinationSelect.value) {
+            params.set("destination", destinationSelect.value);
+        }
 
         const response = await fetch(
             `${API_BASE}/trips?${params.toString()}`

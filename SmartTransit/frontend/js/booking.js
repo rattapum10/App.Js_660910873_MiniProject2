@@ -1,37 +1,39 @@
-﻿"use strict";
+﻿
+"use strict";
 
 /* =========================================
    SmartTransit - Booking Page
-   API: same-origin /api/bookings (supports LocalTunnel and other hostnames)
-   Success screen remains until user navigates.
+   Trip details: GET /api/trips
+   Create booking: POST /api/bookings
+   Price authority: Backend / SQLite
    ========================================= */
 
 const API_BASE = "/api";
 
-/* Prices are for display only. Backend should calculate authoritative total. */
-const TRIP_PRICES = {
-  ST001: 220,
-  ST002: 280,
-  ST003: 200
-};
-
 const params = new URLSearchParams(window.location.search);
 
 const bookingInfo = {
-  tripId: params.get("tripId") || "",
-  origin: params.get("origin") || "",
-  destination: params.get("destination") || "",
+  tripId: (params.get("tripId") || "").trim(),
+  origin: "",
+  destination: "",
   date: params.get("date") || "",
-  departure: params.get("departure") || "",
-  arrival: params.get("arrival") || "",
+  departure: "",
+  arrival: "",
   passengers: Number.parseInt(params.get("passengers") || "1", 10)
 };
+
+let tripData = null;
+let bookingInProgress = false;
+let tripLoading = true;
+let tripLoadError = false;
 
 if (!Number.isInteger(bookingInfo.passengers) || bookingInfo.passengers < 1) {
   bookingInfo.passengers = 1;
 }
 
-let bookingInProgress = false;
+/* =========================================
+   DOM HELPERS
+   ========================================= */
 
 function $(id) {
   return document.getElementById(id);
@@ -39,24 +41,45 @@ function $(id) {
 
 function setText(id, value) {
   const element = $(id);
+
   if (element) {
-    element.textContent = value == null || value === "" ? "-" : String(value);
+    element.textContent =
+      value === undefined || value === null || value === ""
+        ? "-"
+        : String(value);
   }
+}
+
+function formatMoney(value) {
+  const amount = Number(value);
+
+  if (!Number.isFinite(amount) || amount < 0) {
+    return "-";
+  }
+
+  return `฿${amount.toLocaleString("th-TH")}`;
 }
 
 function formatThaiDate(dateString) {
   if (!dateString) return "-";
 
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString);
+
   if (!match) return dateString;
 
-  const date = new Date(
-    Number(match[1]),
-    Number(match[2]) - 1,
-    Number(match[3])
-  );
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
 
-  if (Number.isNaN(date.getTime())) return dateString;
+  const date = new Date(year, month - 1, day);
+
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return dateString;
+  }
 
   return date.toLocaleDateString("th-TH", {
     day: "numeric",
@@ -65,18 +88,57 @@ function formatThaiDate(dateString) {
   });
 }
 
+/* =========================================
+   ERROR HANDLING
+   ========================================= */
+
+function showError(message) {
+  const errorElement = $("bookingError");
+
+  if (errorElement) {
+    errorElement.textContent = message;
+    errorElement.hidden = false;
+    errorElement.style.display = "block";
+
+    errorElement.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest"
+    });
+  } else {
+    window.alert(message);
+  }
+}
+
+function clearError() {
+  const errorElement = $("bookingError");
+
+  if (errorElement) {
+    errorElement.textContent = "";
+    errorElement.hidden = true;
+    errorElement.style.display = "none";
+  }
+}
+
+/* =========================================
+   PRICE CALCULATION
+   ใช้ราคาจาก Backend เท่านั้น
+   ========================================= */
+
 function calculateTotalPrice() {
-  const unitPrice = TRIP_PRICES[bookingInfo.tripId] || 0;
+  if (!tripData) return 0;
+
+  const unitPrice = Number(tripData.price);
+
+  if (!Number.isFinite(unitPrice) || unitPrice < 0) {
+    return 0;
+  }
+
   return unitPrice * bookingInfo.passengers;
 }
 
-function formatMoney(value) {
-  const amount = Number(value);
-  if (!Number.isFinite(amount) || amount < 0) {
-    return "-";
-  }
-  return `฿${amount.toLocaleString("th-TH")}`;
-}
+/* =========================================
+   RENDER TRIP DETAILS
+   ========================================= */
 
 function renderBookingDetails() {
   setText("tripIdText", bookingInfo.tripId);
@@ -86,10 +148,137 @@ function renderBookingDetails() {
   setText("departureText", bookingInfo.departure);
   setText("arrivalText", bookingInfo.arrival);
   setText("passengersText", `${bookingInfo.passengers} คน`);
+
   setText("totalPrice", formatMoney(calculateTotalPrice()));
 }
 
-/* Keep name empty; email may be prefilled from the signed-in account. */
+/* =========================================
+   LOAD TRIP FROM BACKEND
+   GET /api/trips?date=YYYY-MM-DD
+   ========================================= */
+
+async function loadTripDetails() {
+  tripLoading = true;
+  tripLoadError = false;
+  tripData = null;
+
+  const submitButton = $("submitBooking");
+
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.textContent = "กำลังโหลดข้อมูลเที่ยวรถ...";
+  }
+
+  if (!bookingInfo.tripId) {
+    throw new Error("ไม่พบรหัสเที่ยวรถ กรุณากลับไปเลือกเที่ยวรถใหม่");
+  }
+
+  if (!bookingInfo.date) {
+    throw new Error("ไม่พบวันที่เดินทาง กรุณากลับไปเลือกเที่ยวรถใหม่");
+  }
+
+  const dateMatch = /^\d{4}-\d{2}-\d{2}$/.exec(bookingInfo.date);
+
+  if (!dateMatch) {
+    throw new Error("รูปแบบวันที่เดินทางไม่ถูกต้อง");
+  }
+
+  const response = await fetch(
+    `${API_BASE}/trips?date=${encodeURIComponent(bookingInfo.date)}`,
+    {
+      method: "GET",
+      headers: {
+        "Accept": "application/json"
+      },
+      cache: "no-store"
+    }
+  );
+
+  let result = {};
+
+  try {
+    result = await response.json();
+  } catch (error) {
+    result = {};
+  }
+
+  if (!response.ok || result.success !== true) {
+    throw new Error(
+      result.message || "ไม่สามารถโหลดข้อมูลเที่ยวรถจาก Backend ได้"
+    );
+  }
+
+  if (!Array.isArray(result.trips)) {
+    throw new Error("รูปแบบข้อมูลเที่ยวรถจาก Backend ไม่ถูกต้อง");
+  }
+
+  const trip = result.trips.find(
+    (item) => String(item.tripId) === bookingInfo.tripId
+  );
+
+  if (!trip) {
+    throw new Error(
+      "ไม่พบเที่ยวรถนี้ หรือเที่ยวรถไม่ได้เปิดให้บริการ กรุณากลับไปค้นหาใหม่"
+    );
+  }
+
+  const price = Number(trip.price);
+  const availableSeats = Number(trip.availableSeats);
+
+  if (!Number.isFinite(price) || price < 0) {
+    throw new Error("ข้อมูลราคาของเที่ยวรถไม่ถูกต้อง");
+  }
+
+  if (!Number.isSafeInteger(availableSeats) || availableSeats < 0) {
+    throw new Error("ข้อมูลจำนวนที่นั่งจาก Backend ไม่ถูกต้อง");
+  }
+
+  if (!trip.origin || !trip.destination) {
+    throw new Error("ข้อมูลเส้นทางเที่ยวรถไม่ครบถ้วน");
+  }
+
+  tripData = {
+    tripId: String(trip.tripId),
+    origin: String(trip.origin),
+    destination: String(trip.destination),
+    departure: String(trip.departure),
+    arrival: String(trip.arrival),
+    price,
+    capacity: Number(trip.capacity),
+    bookedSeats: Number(trip.bookedSeats),
+    availableSeats
+  };
+
+  // ใช้ข้อมูลจาก Backend เป็นข้อมูลหลัก
+  bookingInfo.origin = tripData.origin;
+  bookingInfo.destination = tripData.destination;
+  bookingInfo.departure = tripData.departure;
+  bookingInfo.arrival = tripData.arrival;
+
+  tripLoading = false;
+
+  renderBookingDetails();
+
+  if (submitButton) {
+    submitButton.disabled = false;
+    submitButton.textContent = "ยืนยันการจองตัวอย่าง";
+  }
+
+  if (bookingInfo.passengers > tripData.availableSeats) {
+    showError(
+      `จำนวนที่นั่งไม่เพียงพอ ขณะนี้เหลือ ${tripData.availableSeats} ที่นั่ง`
+    );
+  }
+
+  console.log("SmartTransit: Trip loaded from Backend", tripData);
+
+  return tripData;
+}
+
+/* =========================================
+   ACCOUNT PREFILL
+   ========================================= */
+
 function prefillAccount() {
   const nameInput = $("fullName");
   const emailInput = $("email");
@@ -105,9 +294,11 @@ function prefillAccount() {
 
   try {
     const savedUser = sessionStorage.getItem("smartTransitUser");
+
     if (!savedUser) return;
 
     const user = JSON.parse(savedUser);
+
     if (emailInput && user.email && !emailInput.value) {
       emailInput.value = user.email;
     }
@@ -116,50 +307,43 @@ function prefillAccount() {
   }
 }
 
-function showError(message) {
-  const errorElement = $("bookingError");
-  if (errorElement) {
-    errorElement.textContent = message;
-    errorElement.hidden = false;
-    errorElement.style.display = "block";
-    errorElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  } else {
-    window.alert(message);
-  }
-}
-
-function clearError() {
-  const errorElement = $("bookingError");
-  if (errorElement) {
-    errorElement.textContent = "";
-    errorElement.hidden = true;
-    errorElement.style.display = "none";
-  }
-}
+/* =========================================
+   FORM VALIDATION
+   ========================================= */
 
 function validateBooking() {
-  if (!bookingInfo.tripId) {
-    showError("ไม่พบรหัสเที่ยวรถ กรุณากลับไปเลือกเที่ยวรถใหม่");
+  if (tripLoading) {
+    showError("กรุณารอให้ระบบโหลดข้อมูลเที่ยวรถก่อน");
     return false;
   }
 
-  if (!bookingInfo.origin || !bookingInfo.destination) {
-    showError("ไม่พบข้อมูลต้นทางหรือปลายทาง กรุณากลับไปเลือกเที่ยวรถใหม่");
+  if (tripLoadError || !tripData) {
+    showError("ไม่สามารถตรวจสอบข้อมูลเที่ยวรถได้ กรุณาโหลดหน้าเว็บใหม่");
+    return false;
+  }
+
+  if (!bookingInfo.tripId) {
+    showError("ไม่พบรหัสเที่ยวรถ");
     return false;
   }
 
   if (!bookingInfo.date) {
-    showError("ไม่พบวันที่เดินทาง กรุณากลับไปเลือกเที่ยวรถใหม่");
+    showError("ไม่พบวันที่เดินทาง");
     return false;
   }
 
-  if (!Number.isInteger(bookingInfo.passengers) || bookingInfo.passengers < 1) {
+  if (
+    !Number.isSafeInteger(bookingInfo.passengers) ||
+    bookingInfo.passengers < 1
+  ) {
     showError("จำนวนผู้โดยสารไม่ถูกต้อง");
     return false;
   }
 
-  if (!TRIP_PRICES[bookingInfo.tripId]) {
-    showError("ไม่พบราคาของเที่ยวรถนี้ กรุณากลับไปเลือกเที่ยวรถใหม่");
+  if (bookingInfo.passengers > tripData.availableSeats) {
+    showError(
+      `จำนวนที่นั่งไม่เพียงพอ เหลือ ${tripData.availableSeats} ที่นั่ง`
+    );
     return false;
   }
 
@@ -194,11 +378,30 @@ function validateBooking() {
   return true;
 }
 
+/* =========================================
+   BOOKING RESPONSE HELPERS
+   ========================================= */
+
 function extractBooking(result) {
-  if (!result || typeof result !== "object") return {};
-  if (result.booking && typeof result.booking === "object") return result.booking;
-  if (result.data?.booking && typeof result.data.booking === "object") return result.data.booking;
-  if (result.data && typeof result.data === "object") return result.data;
+  if (!result || typeof result !== "object") {
+    return {};
+  }
+
+  if (result.booking && typeof result.booking === "object") {
+    return result.booking;
+  }
+
+  if (
+    result.data?.booking &&
+    typeof result.data.booking === "object"
+  ) {
+    return result.data.booking;
+  }
+
+  if (result.data && typeof result.data === "object") {
+    return result.data;
+  }
+
   return result;
 }
 
@@ -211,12 +414,19 @@ function extractBookingId(result) {
     booking.bookingId ??
     booking.booking_id ??
     booking.id ??
+    booking.deleteId ??
     result?.bookingId ??
     result?.booking_id ??
     result?.id;
 
-  return id === undefined || id === null || id === "" ? "ไม่พบรหัสจาก API" : String(id);
+  return id === undefined || id === null || id === ""
+    ? "ไม่พบรหัสจาก API"
+    : String(id);
 }
+
+/* =========================================
+   SUCCESS SCREEN
+   ========================================= */
 
 function showBookingSuccess(result, contact) {
   const bookingContent = $("bookingContent");
@@ -239,37 +449,67 @@ function showBookingSuccess(result, contact) {
     booking.total_price ??
     booking.totalAmount ??
     booking.total_amount ??
+    booking.price ??
     result?.totalPrice ??
     result?.total_price;
 
-  const calculatedTotal = calculateTotalPrice();
-  const totalPrice = returnedTotal !== undefined && returnedTotal !== null
-    ? Number(returnedTotal)
-    : calculatedTotal;
+  // Backend เป็นผู้คำนวณยอดรวมที่เชื่อถือได้
+  const totalPrice =
+    returnedTotal !== undefined && returnedTotal !== null
+      ? Number(returnedTotal)
+      : calculateTotalPrice();
 
   setText("confirmationBookingId", extractBookingId(result));
   setText("confirmationFullName", contact.fullName);
+
   setText("confirmationTripId", bookingInfo.tripId);
   setText("confirmationOrigin", bookingInfo.origin);
   setText("confirmationDestination", bookingInfo.destination);
+
   setText("confirmationDate", formatThaiDate(bookingInfo.date));
   setText("confirmationDeparture", bookingInfo.departure);
   setText("confirmationArrival", bookingInfo.arrival);
+
   setText("confirmationPassengers", `${bookingInfo.passengers} คน`);
+
   setText("confirmationPhone", contact.phone);
   setText("confirmationEmail", contact.email);
-  setText("confirmationPrice", formatMoney(Number.isFinite(totalPrice) ? totalPrice : calculatedTotal));
+
+  setText(
+    "confirmationPrice",
+    formatMoney(
+      Number.isFinite(totalPrice) && totalPrice >= 0
+        ? totalPrice
+        : calculateTotalPrice()
+    )
+  );
 
   const historyButton = $("goHistoryBtn");
-  if (historyButton) historyButton.href = "history.html";
+
+  if (historyButton) {
+    historyButton.href = "history.html";
+  }
 
   const homeButton = $("goHomeBtn");
-  if (homeButton) homeButton.href = "index.html";
 
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (homeButton) {
+    homeButton.href = "index.html";
+  }
 
-  /* Intentionally no setTimeout, location.href, or reload here. */
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+  console.log("SmartTransit: Booking completed", result);
+
+  // ไม่เปลี่ยนหน้าอัตโนมัติ
 }
+
+/* =========================================
+   CREATE BOOKING
+   POST /api/bookings
+   ========================================= */
 
 async function createBooking(event) {
   event?.preventDefault();
@@ -277,9 +517,11 @@ async function createBooking(event) {
   if (bookingInProgress) return;
 
   clearError();
+
   if (!validateBooking()) return;
 
   const token = sessionStorage.getItem("smartTransitToken");
+
   if (!token) {
     showError("กรุณาเข้าสู่ระบบก่อนทำรายการจอง");
     return;
@@ -297,29 +539,28 @@ async function createBooking(event) {
     email: emailInput.value.trim()
   };
 
-  /*
-   * The current known backend accepts tripId, origin, destination, date,
-   * passengers, phone, email and notes. fullName is also sent for forward
-   * compatibility, but a backend/schema update may be required to persist it.
-   */
+  // ส่งข้อมูลที่ Backend ต้องการ
+  // ไม่ส่งราคาเพื่อให้ Backend อ่านราคาจาก SQLite เอง
+
   const payload = {
     tripId: bookingInfo.tripId,
-    origin: bookingInfo.origin,
-    destination: bookingInfo.destination,
     date: bookingInfo.date,
-    departure: bookingInfo.departure,
-    arrival: bookingInfo.arrival,
-    departure_time: bookingInfo.departure,
-    arrival_time: bookingInfo.arrival,
     passengers: bookingInfo.passengers,
+
     fullName: contact.fullName,
     phone: contact.phone,
     email: contact.email,
-    notes: notesInput ? notesInput.value.trim() : ""
+
+    notes: notesInput
+      ? notesInput.value.trim()
+      : ""
   };
 
   bookingInProgress = true;
-  const originalButtonText = submitButton ? submitButton.textContent : "ยืนยันการจอง";
+
+  const originalButtonText = submitButton
+    ? submitButton.textContent
+    : "ยืนยันการจอง";
 
   if (submitButton) {
     submitButton.disabled = true;
@@ -331,26 +572,37 @@ async function createBooking(event) {
   try {
     const response = await fetch(`${API_BASE}/bookings`, {
       method: "POST",
+
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`
       },
+
       body: JSON.stringify(payload)
     });
 
     let result = {};
+
     try {
       result = await response.json();
-    } catch (parseError) {
+    } catch (error) {
       result = {};
     }
 
     if (response.status === 401) {
-      showError("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่");
+      if (
+        window.SmartTransitAuth &&
+        typeof window.SmartTransitAuth.handleUnauthorized === "function"
+      ) {
+        window.SmartTransitAuth.handleUnauthorized();
+      } else {
+        showError("Session หมดอายุ กรุณาเข้าสู่ระบบใหม่");
+      }
+
       return;
     }
 
-    if (!response.ok) {
+    if (!response.ok || result.success !== true) {
       throw new Error(
         result.message ||
         result.error ||
@@ -359,15 +611,22 @@ async function createBooking(event) {
     }
 
     showBookingSuccess(result, contact);
+
     bookingSucceeded = true;
+
   } catch (error) {
     console.error("SmartTransit booking error:", error);
 
     if (error instanceof TypeError) {
-      showError("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาตรวจสอบว่า Backend และ LocalTunnel ยังทำงานอยู่ แล้วลองโหลดหน้าเว็บใหม่");
+      showError(
+        "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาตรวจสอบ Backend แล้วลองอีกครั้ง"
+      );
     } else {
-      showError(error.message || "เกิดข้อผิดพลาดในการจอง กรุณาลองอีกครั้ง");
+      showError(
+        error.message || "เกิดข้อผิดพลาดในการจอง กรุณาลองอีกครั้ง"
+      );
     }
+
   } finally {
     bookingInProgress = false;
 
@@ -378,22 +637,49 @@ async function createBooking(event) {
   }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  renderBookingDetails();
-  prefillAccount();
+/* =========================================
+   INITIALIZATION
+   ========================================= */
+
+document.addEventListener("DOMContentLoaded", async function () {
   clearError();
 
-  const bookingForm = $("bookingForm");
-  if (bookingForm) {
-    bookingForm.addEventListener("submit", createBooking);
-  }
+  prefillAccount();
 
   const nameInput = $("fullName");
+
   if (nameInput) {
     nameInput.value = "";
     nameInput.readOnly = false;
     nameInput.disabled = false;
     nameInput.removeAttribute("readonly");
     nameInput.removeAttribute("disabled");
+  }
+
+  const bookingForm = $("bookingForm");
+
+  if (bookingForm) {
+    bookingForm.addEventListener("submit", createBooking);
+  }
+
+  renderBookingDetails();
+
+  try {
+    await loadTripDetails();
+
+  } catch (error) {
+    console.error("SmartTransit trip loading error:", error);
+
+    tripLoading = false;
+    tripLoadError = true;
+
+    const submitButton = $("submitBooking");
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = "ไม่สามารถจองได้";
+    }
+
+    showError(error.message || "ไม่สามารถโหลดข้อมูลเที่ยวรถได้");
   }
 });

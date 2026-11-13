@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 /* SmartTransit History: load and delete bookings owned by current user. */
 const API_BASE = "/api";
@@ -137,7 +137,10 @@ function renderBookings(bookings) {
     status.className = "history-status";
     const dot = document.createElement("span");
     dot.className = "history-status-dot";
-    const statusText = String(pick(row, ["status"], "ยืนยันแล้ว"));
+    const rawStatus = String(pick(row, ["status"], "confirmed")).toLowerCase();
+    const statusLabels = { confirmed: "ยืนยันแล้ว", pending: "รอดำเนินการ", cancelled: "ยกเลิกแล้ว" };
+    const statusText = statusLabels[rawStatus] || rawStatus;
+    status.classList.toggle("is-cancelled", rawStatus === "cancelled");
     status.append(dot, document.createTextNode(statusText));
     top.append(routeInfo, status);
 
@@ -161,16 +164,18 @@ function renderBookings(bookings) {
     const deleteButton = document.createElement("button");
     deleteButton.type = "button";
     deleteButton.className = "history-delete-button";
-    deleteButton.append(makeTrashIcon(), document.createTextNode("ลบรายการจอง"));
+    deleteButton.append(makeTrashIcon(), document.createTextNode("ยกเลิกการจอง"));
     deleteButton.setAttribute(
       "aria-label",
-      id === "" ? "ลบรายการจอง (ไม่พบรหัส)" : `ลบรายการจองหมายเลข ${id}`
+      id === "" ? "ยกเลิกการจอง (ไม่พบรหัส)" : `ยกเลิกการจองหมายเลข ${id}`
     );
 
     // ถ้า API ไม่ส่ง ID ที่ใช้ลบมา จะปิดปุ่มแทนการส่ง DELETE ด้วย ID ที่ไม่ถูกต้อง
     if (id === "") {
       deleteButton.disabled = true;
       deleteButton.title = "รายการนี้ไม่มี booking ID จาก API";
+    } else if (rawStatus === "cancelled") {
+      deleteButton.hidden = true;
     } else {
       deleteButton.addEventListener("click", () => deleteBooking(id, card, deleteButton));
     }
@@ -221,7 +226,8 @@ async function loadHistory() {
     try { data = await response.json(); } catch (_) { data = {}; }
 
     if (response.status === 401) {
-      throw new Error("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่");
+      window.SmartTransitAuth.handleUnauthorized();
+      return;
     }
     if (!response.ok) {
       throw new Error(data.message || data.error || "โหลดประวัติการจองไม่สำเร็จ");
@@ -244,7 +250,7 @@ async function loadHistory() {
 async function deleteBooking(id, card, button) {
   const bookingId = String(id);
   const confirmed = window.confirm(
-    `คุณแน่ใจหรือไม่ว่าต้องการลบรายการจอง #${bookingId}?\nการลบนี้ไม่สามารถย้อนกลับได้`
+    `คุณต้องการยกเลิกการจอง #${bookingId} ใช่หรือไม่?\nระบบจะเก็บประวัติรายการนี้ไว้และคืนจำนวนที่นั่งให้เที่ยวรถ`
   );
 
   if (!confirmed) return;
@@ -258,7 +264,7 @@ async function deleteBooking(id, card, button) {
   clearError();
   const oldButtonText = button.textContent;
   button.disabled = true;
-  button.replaceChildren(makeTrashIcon(), document.createTextNode("กำลังลบ..."));
+  button.replaceChildren(makeTrashIcon(), document.createTextNode("กำลังยกเลิก..."));
 
   try {
     const response = await fetch(
@@ -275,7 +281,8 @@ async function deleteBooking(id, card, button) {
     try { data = await response.json(); } catch (_) { data = {}; }
 
     if (response.status === 401) {
-      throw new Error("เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่");
+      window.SmartTransitAuth.handleUnauthorized();
+      return;
     }
 
     if (response.status === 404) {
@@ -283,21 +290,17 @@ async function deleteBooking(id, card, button) {
     }
 
     if (!response.ok) {
-      throw new Error(data.message || data.error || "ลบรายการจองไม่สำเร็จ");
+      throw new Error(data.message || data.error || "ยกเลิกการจองไม่สำเร็จ");
     }
 
-    // ลบการ์ดออกจากหน้าเมื่อ Backend ยืนยันว่าลบสำเร็จแล้วเท่านั้น
-    card.remove();
-    currentBookings = currentBookings.filter(
-      row => String(getBookingId(row)) !== bookingId
-    );
-    updateEmptyState();
+    // โหลดประวัติใหม่เพื่อแสดงสถานะยกเลิกจาก Backend
+    await loadHistory();
   } catch (error) {
     console.error("SmartTransit delete booking error:", error);
     showError(error.message || "ไม่สามารถลบรายการจองได้ กรุณาลองอีกครั้ง");
     button.disabled = false;
-    button.replaceChildren(makeTrashIcon(), document.createTextNode("ลบรายการจอง"));
-    button.setAttribute("aria-label", `ลบรายการจองหมายเลข ${bookingId}`);
+    button.replaceChildren(makeTrashIcon(), document.createTextNode("ยกเลิกการจอง"));
+    button.setAttribute("aria-label", `ยกเลิกการจองหมายเลข ${bookingId}`);
   }
 }
 

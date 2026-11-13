@@ -588,76 +588,58 @@ function getMyBookings(req, res) {
 function deleteBooking(req, res) {
   try {
     const userId = getUserId(req);
-
     if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: "ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่"
-      });
+      return res.status(401).json({ success: false, message: "ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่" });
     }
 
     const rawId = String(req.params.id ?? "").trim();
-
     if (!rawId) {
-      return res.status(400).json({
-        success: false,
-        message: "รหัสการจองไม่ถูกต้อง"
-      });
+      return res.status(400).json({ success: false, message: "รหัสการจองไม่ถูกต้อง" });
     }
 
     const columns = getTableColumns("bookings");
     const map = getColumnMap(columns);
     const identityColumn = getBookingIdentityColumn(map);
-
-    if (!identityColumn || !map.has("user_id")) {
+    if (!identityColumn || !map.has("user_id") || !map.has("status")) {
       throw new Error("โครงสร้างตาราง bookings ไม่ถูกต้อง");
     }
 
-    const usesNumericId = ["booking_id", "id"].includes(
-      String(identityColumn).toLowerCase()
-    );
-
-    let bookingId = rawId;
-
-    if (usesNumericId) {
-      bookingId = Number(rawId);
-
-      if (
-        !Number.isSafeInteger(bookingId) ||
-        bookingId < 1
-      ) {
-        return res.status(400).json({
-          success: false,
-          message: "รหัสการจองไม่ถูกต้อง"
-        });
-      }
+    const usesNumericId = ["booking_id", "id"].includes(String(identityColumn).toLowerCase());
+    const bookingId = usesNumericId ? Number(rawId) : rawId;
+    if (usesNumericId && (!Number.isSafeInteger(bookingId) || bookingId < 1)) {
+      return res.status(400).json({ success: false, message: "รหัสการจองไม่ถูกต้อง" });
     }
 
+    // ยกเลิกแบบเก็บประวัติไว้ ไม่ลบข้อมูลการจองถาวร
     const result = db.prepare(`
-      DELETE FROM bookings
+      UPDATE bookings
+      SET status = 'cancelled'
       WHERE ${quoteIdentifier(identityColumn)} = ?
         AND user_id = ?
+        AND LOWER(status) IN ('pending', 'confirmed')
     `).run(bookingId, userId);
 
     if (result.changes === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "ไม่พบรายการจอง หรือคุณไม่มีสิทธิ์ลบรายการนี้"
-      });
+      const existing = db.prepare(`
+        SELECT status FROM bookings
+        WHERE ${quoteIdentifier(identityColumn)} = ? AND user_id = ?
+      `).get(bookingId, userId);
+
+      if (!existing) {
+        return res.status(404).json({ success: false, message: "ไม่พบรายการจอง หรือคุณไม่มีสิทธิ์ดำเนินการ" });
+      }
+      return res.status(409).json({ success: false, message: "รายการจองนี้ถูกยกเลิกไปแล้ว" });
     }
 
     return res.status(200).json({
       success: true,
-      message: "ลบรายการจองเรียบร้อยแล้ว",
-      bookingId
+      message: "ยกเลิกการจองเรียบร้อยแล้ว",
+      bookingId,
+      status: "cancelled"
     });
   } catch (error) {
-    console.error("Delete booking error:", error.stack || error);
-
-    return res.status(500).json({
-      success: false,
-      message: getErrorMessage(error)
-    });
+    console.error("Cancel booking error:", error.stack || error);
+    return res.status(500).json({ success: false, message: getErrorMessage(error) });
   }
 }
 
